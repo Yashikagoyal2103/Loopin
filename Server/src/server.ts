@@ -1,9 +1,11 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
-// import mongoose from 'mongoose';
+import ConnectDB from './config/db.js';
+import { inngest, functions  } from "../src/inngest"
 
 dotenv.config();
+
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -11,16 +13,12 @@ const PORT = process.env.PORT || 4000;
 //middlewares
 app.use(cors());
 app.use(express.json());
+app.use("/api/inngest", serve({ client: inngest, functions }));
 
-// // MongoDB connection
-// mongoose.connect(process.env.DATABASE_URL!)
-//   .then(() => console.log('MongoDB connected'))
-//   .catch(err => console.error('MongoDB connection error:', err));
+// Connect to MongoDB
+await ConnectDB();
 
-// app.use('/api/user', require('./routes/user.js'));
-
-// require('./config/database.js').connectDB();
-
+// Route
 app.get('/', (req, res) => {
   res.send('Server is running!!');
 });
