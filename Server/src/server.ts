@@ -2,10 +2,10 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import ConnectDB from './config/db.js';
-import { inngest, functions  } from "../src/inngest"
+import { inngest, functions  } from "./inngest/index.js"
+import { serve } from "inngest/express.js";
 
 dotenv.config();
-
 
 const app = express();
 const PORT = process.env.PORT || 4000;

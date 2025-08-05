@@ -43,6 +43,8 @@ yarn.lock
 .env
 *.env.local
 *.secret
+vercel.json
+nodemon.json
 credentials.json
 
 *.dockerfile
