@@ -1,4 +1,4 @@
-import logo from './logo.svg'
+import logo from './logo.png'
 import sample_cover from './sample_cover.jpg'
 import sample_profile from './sample_profile.jpg'
 import bgImage from './bgImage.png'
@@ -6,16 +6,88 @@ import group_users from './group_users.png'
 import { Home, MessageCircle, Search, UserIcon, Users } from 'lucide-react'
 import sponsored_img from './sponsored_img.png'
 
-export const assets = {
-    logo,
-    sample_cover,
-    sample_profile,
-    bgImage,
-    group_users,
-    sponsored_img
+// TypeScript interfaces for the data structures used in the application
+interface User {
+  _id: string;
+  email: string;
+  full_name: string;
+  username: string;
+  bio: string;
+  profile_picture: string;
+  cover_photo: string;
+  location: string;
+  followers: string[];
+  following: string[];
+  connections: string[];
+  posts: string[];
+  is_verified: boolean;
+  createdAt: string;
+  updatedAt: string;
 }
 
-export const menuItemsData = [
+interface Story {
+  _id: string;
+  user: User;
+  content: string;
+  media_url: string;
+  media_type: 'text' | 'image' | 'video';
+  background_color: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Post {
+  _id: string;
+  user: User;
+  content: string;
+  image_urls: string[];
+  post_type: 'text' | 'text_with_image' | 'image' | 'video';
+  likes_count: string[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface MenuItem {
+  to: string;
+  label: string;
+  Icon: React.ComponentType;
+}
+
+interface RecentMessage {
+    "_id": string,
+    "from_user_id":User,
+    "to_user_id": User,
+    "text": string,
+    "message_type": string,
+    "media_url": string,
+    "seen": boolean,
+    "createdAt": string,
+    "updatedAt": string,
+}
+
+interface dummyMessage {
+    "_id": string,
+    "from_user_id":string,
+    "to_user_id": string,
+    "text": string,
+    "message_type": string,
+    "media_url": string,
+    "seen": boolean,
+    "createdAt": string,
+    "updatedAt": string,
+}
+
+// Assets export
+export const assets = {
+  logo,
+  sample_cover,
+  sample_profile,
+  bgImage,
+  group_users,
+  sponsored_img
+};
+
+export const menuItemsData:MenuItem[] = [
     { to: '/', label: 'Feed', Icon: Home },
     { to: '/messages', label: 'Messages', Icon: MessageCircle },
     { to: '/connections', label: 'Connections', Icon: Users },
@@ -23,7 +95,7 @@ export const menuItemsData = [
     { to: '/profile', label: 'Profile', Icon: UserIcon },
 ];
 
-export const dummyUserData = {
+export const dummyUserData:User = {
     "_id": "user_2zdFoZib5lNr614LgkONdD8WG32",
     "email": "admin@example.com",
     "full_name": "John Warren",
@@ -57,7 +129,7 @@ const dummyUser3Data = {
     profile_picture: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?q=80&w=200&h=200&auto=format&fit=crop",
 }
 
-export const dummyStoriesData = [
+export const dummyStoriesData: Story[] = [
     {
         "_id": "68833d466e4b42b685068860",
         "user": dummyUserData,
@@ -121,7 +193,7 @@ export const dummyStoriesData = [
 ]
 
 
-export const dummyPostsData = [
+export const dummyPostsData:Post[] = [
     {
         "_id": "68773e977db16954a783839c",
         "user": dummyUserData,
@@ -192,7 +264,7 @@ export const dummyPostsData = [
     }
 ]
 
-export const dummyRecentMessagesData = [
+export const dummyRecentMessagesData:RecentMessage[] = [
     {
         "_id": "68833af618623d2de81b5381",
         "from_user_id": dummyUser2Data,
@@ -228,7 +300,7 @@ export const dummyRecentMessagesData = [
     }
 ]
 
-export const dummyMessagesData = [
+export const dummyMessagesData:dummyMessage[] = [
     {
         "_id": "6878cc3217a54e4d37480122",
         "from_user_id": "user_2zwZSCMRXQ9GaEEVLgm6akQo96i",
