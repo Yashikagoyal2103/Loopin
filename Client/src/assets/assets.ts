@@ -7,7 +7,7 @@ import { Home, MessageCircle, Search, UserIcon, Users } from 'lucide-react'
 import sponsored_img from './sponsored_img.png'
 
 // TypeScript interfaces for the data structures used in the application
-interface User {
+export interface User {
   _id: string;
   email: string;
   full_name: string;
@@ -25,7 +25,7 @@ interface User {
   updatedAt: string;
 }
 
-interface Story {
+export interface Story {
   _id: string;
   user: User;
   content: string;
