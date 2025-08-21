@@ -5,6 +5,7 @@ import { type Post } from '../assets/assets';     //type is written to separate 
 import StoriesBar from '../components/StoriesBar';
 import PostCard from '../components/PostCard'
 
+
 const Feed = () => {
   const [feeds, setFeeds] = useState<Post[]>([]);
   const [ loading , setLoading ] = useState<boolean>(true);
@@ -26,7 +27,7 @@ const Feed = () => {
 
         {/* List of Posts */}
         <div className='p-4 space-y-6' >
-          {feeds.map(() => (
+          {feeds.map((post) => (
             <PostCard key={post._id} post={post}/>
           ))} 
 

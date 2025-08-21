@@ -1,8 +1,23 @@
-import { BadgeCheck } from "lucide-react"
+import { BadgeCheck, Heart, MessageCircle, Share2 } from "lucide-react"
 import moment from "moment"
+import { dummyUserData } from "../assets/assets";
+import { useState } from "react";
+import { type Post } from "../assets/assets"; 
+interface PostCardProps {
+  post: Post;
+}
+
+const PostCard = ({ post }: PostCardProps) => {
+
+   const postWithHashTags = post.content.replace(/(#\w+)/g, '<span class="text-blue-500">$1</span>');
+   const [likes, setLikes] = useState(post.likes_count ||0);
+   const currentUser = dummyUserData;
+
+   const handleLike = async () => {
+
+   }
 
 
-const PostCard = ({post}) => {
   return (
     <div className="bg-white rounded-xl shadow p-4 space-y-4 w-full max-w-2xl">
         {/* User info */}
@@ -18,16 +33,35 @@ const PostCard = ({post}) => {
         </div>
         {/* Content */}
         {post.content && <div className='text-gray-800 text-sm whitespace-pre-line'
-        dangerouslySetInnerHTML={{__html:post.content}}/>}
+        dangerouslySetInnerHTML={{__html:postWithHashTags}}/>}
 
         {/* Images */}
         <div className='grid grid-cols-2 gap-2'>
           {
-            post.image_urls.map((image, index)=> (
-              <img src={image} key={index} alt='' className={`w-full h-48 object-cover rounded-lg ${post.image_urls.length === 1 && 'col-span-2 h-auto'}` }/>
+            post.image_urls.map((img, index:number)=> (
+              <img src={img} key={index} alt='' className={`w-full h-48 object-cover rounded-lg ${post.image_urls.length === 1 && 'col-span-2 h-auto'}` }/>
             ))
           }
           </div>
+
+          {/* Actions  */}
+          <div className="flex items-center text-gray-600 text-sm gap-4 pt-2 border-t border-gray-300">
+            <div className="flex items-center gap-1 cursor-pointer">
+              <Heart  className={`w-6 h-4 cursor-pointer${likes.includes(currentUser._id) && 'text-red-500 '}`}
+              onClick={handleLike}/>
+              <span>{likes.length}</span>
+            </div>
+            <div className="flex items-center gap-1 cursor-pointer">
+              <MessageCircle className="w-6 h-4 cursor-pointer" />
+              <span >{12}</span>
+            </div>
+            <div className="flex items-center gap-1 cursor-pointer">
+              <Share2 className="w-6 h-4 cursor-pointer" />
+              <span >{7}</span>
+            </div>
+          </div>
+
+
     </div>
   )
 }
