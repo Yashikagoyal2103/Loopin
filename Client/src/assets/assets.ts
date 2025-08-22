@@ -53,7 +53,7 @@ interface MenuItem {
   Icon: React.ComponentType;
 }
 
-interface RecentMessage {
+export interface RecentMessage {
     "_id": string,
     "from_user_id":User,
     "to_user_id": User,
