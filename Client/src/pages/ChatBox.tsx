@@ -1,8 +1,80 @@
-import React from 'react'
+import { useState, useRef ,useEffect } from 'react'
+import { dummyMessagesData, dummyUserData } from '../assets/assets'
+import {type User } from '../assets/assets'
+import { ImageIcon, SendHorizonal } from 'lucide-react'
+
 
 const ChatBox = () => {
-  return (
-    <div>ChatBox</div>
+
+  const messages = dummyMessagesData
+  const [text, setText] = useState('')
+  const [image, setImage ] = useState<File | null>(null)
+  const [user, setUser] = useState<User>(dummyUserData)
+  const messageEndRef = useRef<HTMLDivElement>(null)
+
+  const sendMessage = async() =>{
+
+  }
+
+  useEffect(() =>{
+    messageEndRef.current?.scrollIntoView({behavior: "smooth"})
+  }, [messages])
+
+  return user && (
+    <div className='flex flex-col h-screen'>
+      <div className='flex items-center gap-2 p-2 md:px-10 xl:pl-42 bg-gradient-to-r fron-indigo-50 to-purple-50 border-b border-gray-300'>
+        <img src={user.profile_picture} className='size-8 rounded-full' alt='Profile picture' />
+        <div>
+          <p className='font-medium'>{user.full_name}</p>
+          <p className='text-sm text-gray-500 -mt-1.5'>@{user.username}</p>
+        </div>
+      </div>
+      <div className='p-5 md:px-10 h-full overflow-y-scroll'>
+        <div className='space-y-4 max-w-4xl mx-auto'>
+          {
+            messages.slice().sort((a,b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()).map((message, index) =>(
+              <div key={index} className={`flex flex-col ${message.to_user_id !== user._id ? 'items-start' : 'items-end'} `}>
+                <div className={`p-2 text-sm max-w-sm bg-white text-slate-700 rounded-lg shadow ${message.to_user_id !== user._id ? 
+                  'rounded-bl-none' : 'rounded-br-none'}`}>
+                  {
+                    message.message_type === 'image' && <img src={message.media_url} className='w-full max-w-sm mb-1 rounded-lg' alt="image"/>
+                  }
+                  <p>{message.text}</p>
+                </div>
+              </div>
+            ))
+          }
+          <div ref={messageEndRef} />
+          </div>
+        </div>
+
+
+        <div className='px-4'>
+          <div className='flex items-center gap-3 pl-5 p-1.4 bg-white w-full max-w-xl mx-auto border border-gray-200 mb-5 shadow rounded-full'>
+            <input type='text' placeholder='Text a message...' onKeyDown={e=> e.key === 'Enter' && sendMessage()} 
+            className='flex-1 outline-none text-slate-700 ' value={text} onChange={(e) => setText(e.target.value)}/>
+
+            <label htmlFor='image' >
+              {image ? <img src={URL.createObjectURL(image)} className='h-8 rounded' alt='image'/> 
+              : <ImageIcon className='size-7 text-gray-400 cursor-pointer'/>
+              }
+              <input  type='file' id='image' accept="image/*" hidden
+                onChange={(e) => {
+                  const files = e.target.files;
+                  if (files && files[0]) {
+                    setImage(files[0]);
+                  }}}/>
+            </label>
+
+            <button onClick={sendMessage} aria-label='Send' className='bg-gradient-to-br from-indigo-500 to-purple-600 hover:from-indigo-700
+             hover:to-purple-800 active:scale-95 cursor-pointer p-2 text-white rounded-full'>
+              <SendHorizonal size={18} />
+            </button>
+          </div>
+        </div>
+
+
+    </div>
   )
 }
 
