@@ -4,5 +4,4 @@ dist/
 package-lock.json
 .env
 *.env.local
-vercel.json
 nodemon.json
