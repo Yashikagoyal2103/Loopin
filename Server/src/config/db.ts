@@ -5,6 +5,7 @@ const ConnectDB = async () => {
     dotenv.config();
     try {
         await mongoose.connect(process.env.DATABASE_URL!, {
+            dbName: 'LoopinDatabase'
         });
         console.log('MongoDB connected');
     } catch (error) {
