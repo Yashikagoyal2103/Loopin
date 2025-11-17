@@ -8,7 +8,7 @@ const ConnectDB = async () => {
             dbName: 'LoopinDatabase'
         });
         console.log('MongoDB connected');
-    } catch (error) {
+    } catch (error: unknown) {
         console.error('MongoDB connection error:', error);
         process.exit(1); 
     }
