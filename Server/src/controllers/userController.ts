@@ -4,6 +4,8 @@ import { getAuth } from '@clerk/express';
 import fs from 'fs';
 import { imageKit } from "../config/imageKit.js";
 import { Connection } from "../model/connections.js";
+import Post from "../model/Post.js";
+import { inngest } from "../inngest/index.js";
 
 //get user data using userId
 export const getUserData = async (req: Request, res: Response) => {
@@ -232,9 +234,14 @@ export const sendConnectionRequest = async (req: Request, res: Response) => {
             ]
         });
         if(!connection){
-            await Connection.create({
+            const newConnection= await Connection.create({
                 from_user_id: userId,
                 to_user_id: id,
+            })
+
+            await inngest.send({
+                name:'app/connection-request',
+                data:{ConnectionId: newConnection._id}
             })
             return res.json({ success: true, message: "Connection request sent successfully" });
         }else if(connection && connection.status === 'accepted'){
@@ -314,4 +321,23 @@ export const acceptConnectionRequest = async (req: Request, res: Response) => {
         console.log(error as Error);
         res.json({ success: false, message: (error as Error).message });
     }
+}
+
+//Get user profiles
+export const getUserProfile = async (req: Request, res: Response) => {
+    try {
+        const { profileId }= req.body;
+        const profile = await User.findById(profileId);
+
+        if(!profile){
+            return res.status(404).json({ success: false, message: "Profile not found" });
+        }
+
+        const posts= await Post.find({user: profileId}).populate('user')
+        res.json({ success: true, profile, posts });
+
+    }catch (error:unknown){
+        console.log(error as Error);
+        res.json({ success: false, message: (error as Error).message });
+    }       
 }

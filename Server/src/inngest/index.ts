@@ -2,6 +2,7 @@ import { Inngest } from "inngest";
 import User from "../model/User.js";
 import sendEmail from "../config/nodeMailer.js";
 import { Connection } from "../model/connections.js";
+import Story from "../model/Story.js";
 
 // Create a client to send and receive events
 export const inngest = new Inngest({ id: "Loopin-app" });
@@ -138,6 +139,21 @@ const sendNewConnectionRequestRemainder = inngest.createFunction(
     });
   }
 );
+
+//Inngest function to delete story after 24 hours of creation
+const deleteStory = inngest.createFunction(
+  {id: 'story-delete'},
+  {event: 'app/story-created'},
+  async({event, step})=>{
+    const { storyId } = event.data;
+    const in24Hours = new Date(Date.now() + 24 * 60 * 60 * 1000);
+    await step.sleepUntil("wait-24-hours", in24Hours);
+    await step.run('delete-story', async()=>{
+        await Story.findByIdAndDelete(storyId);
+        return {message: "Story deleted after 24 hours"};
+    })
+  }
+)
 
 // Create an empty array where we'll export future Inngest functions
 export const functions = [
