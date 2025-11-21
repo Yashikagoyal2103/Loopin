@@ -3,6 +3,7 @@ import User from "../model/User.js";
 import sendEmail from "../config/nodeMailer.js";
 import { Connection } from "../model/connections.js";
 import Story from "../model/Story.js";
+import Message from "../model/Message.js";
 
 // Create a client to send and receive events
 export const inngest = new Inngest({ id: "Loopin-app" });
@@ -155,10 +156,58 @@ const deleteStory = inngest.createFunction(
   }
 )
 
+//Inngest dunction to send notification of unseen messages
+const sendNotificationOfUnseenMessages = inngest.createFunction(
+  { id: 'send-unseen-messages-notification' },
+  { cron: "TZ=America/New_York 0 9 * * *" }, // Every day at 9 AM
+  async ({ step }) => {
+    const messages = await Message.find({ seen: false }).populate('to_user_id');
+    
+    const unseenCount = new Map();
+    
+    messages.forEach(message => {
+      // Convert ObjectId to string for use as key
+      const userId = message.to_user_id._id.toString();
+      unseenCount.set(userId, (unseenCount.get(userId) || 0) + 1);
+    });
+
+    for (const [userId, count] of unseenCount) {
+      const user = await User.findById(userId);
+      
+      if (!user) {
+        console.log(`User ${userId} not found, skipping email`);
+        continue;
+      }
+
+      const subject = `You have ${count} unseen messages`;
+      const body = `
+      <div style="font-family:Arial, sans-serif; padding:20px;">
+        <h2>Hi ${user.full_name},</h2>
+        <p>You have ${count} unseen message${count > 1 ? 's' : ''}</p>
+        <p>Click <a href="${process.env.FRONTEND_URL}/messages" style="color: #10b981;">here</a> to view them.</p>
+        <br/>
+        <p>Thanks, <br/> Loopin - Stay Connected</p>
+      </div>`;
+
+      await sendEmail({
+        to: user.email,
+        subject,
+        body
+      });
+      
+      console.log(`Notification sent to ${user.email}`);
+    }
+    
+    return { message: "Unseen message notifications sent" };
+  }
+);
+
 // Create an empty array where we'll export future Inngest functions
 export const functions = [
     syncUserCreation,
     syncUserUpdation,
     syncUserDeletion,
-    sendNewConnectionRequestRemainder
+    sendNewConnectionRequestRemainder,
+    deleteStory,
+    sendNotificationOfUnseenMessages
 ];
