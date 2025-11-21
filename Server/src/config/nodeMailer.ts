@@ -1,5 +1,5 @@
 import nodemailer from 'nodemailer';
-import dotenv from 'dotnev';
+import dotenv from 'dotenv';
 dotenv.config();
 
 const transporter = nodemailer.createTransport({
@@ -11,7 +11,13 @@ const transporter = nodemailer.createTransport({
     },
 });
 
-const sendEmail = async ({to, subject, body}) => {
+interface EmailOptions {
+  to: string | string[];
+  subject: string;
+  body: string;
+}
+
+const sendEmail = async ({to, subject, body}:EmailOptions ) => {
     const response = await transporter.sendMail({
         from: process.env.SENDER_EMAIL,
         to,

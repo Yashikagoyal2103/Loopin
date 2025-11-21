@@ -1,9 +1,9 @@
-import User from "../model/User";
+import User from "../model/User.js";
 import type { Request, Response } from 'express';
 import { getAuth } from '@clerk/express';
 import fs from 'fs';
-import { imageKit } from "../config/imageKit";
-import { Connection } from "../model/connections";
+import { imageKit } from "../config/imageKit.js";
+import { Connection } from "../model/connections.js";
 
 //get user data using userId
 export const getUserData = async (req: Request, res: Response) => {
