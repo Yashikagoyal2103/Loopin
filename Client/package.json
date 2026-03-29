@@ -10,8 +10,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@clerk/clerk-react": "^5.42.1",
-    "@clerk/nextjs": "^6.31.1",
+    "axios": "^1.7.9",
+    "js-cookie": "^3.0.5",
     "@tailwindcss/vite": "^4.1.11",
     "lucide-react": "^0.536.0",
     "moment": "^2.30.1",

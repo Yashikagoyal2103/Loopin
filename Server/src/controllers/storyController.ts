@@ -1,5 +1,4 @@
 import type { Request, Response } from 'express';
-import { getAuth } from '@clerk/express';
 import fs from 'fs';
 import { imageKit } from '../config/imageKit.js';
 import Story from '../model/Story.js';
@@ -9,7 +8,7 @@ import { inngest } from '../inngest/index.js';
 //Add Story
 export const addUserStory = async (req: Request, res: Response) => {
     try {
-        const { userId } = getAuth(req);
+        const userId = req.user?.id;
         const {constent, media_type, background_color }= req.body;
         const media = req.file;
         let media_url= "";
@@ -56,7 +55,7 @@ export const addUserStory = async (req: Request, res: Response) => {
 //Get User Stories
 export const getStories = async (req: Request, res: Response) => {
     try {
-        const { userId } = getAuth(req);
+        const userId = req.user?.id;
         const user = await User.findById(userId);
         if(!user){
             return res.status(404).json({success:false, message:"User not found"});

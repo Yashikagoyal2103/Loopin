@@ -1,10 +1,10 @@
 import type { Request, Response } from 'express';
-import { getAuth } from '@clerk/express';
 import fs from 'fs';
 import { imageKit } from '../config/imageKit.js';
 import User from '../model/User.js';
 import { inngest } from '../inngest/index.js';
 import Message from '../model/Message.js';
+import { getAuth } from '../middlewares/auth.js';
 
 // Define the type for connections object
 interface Connections {
@@ -16,7 +16,7 @@ const connections: Connections = {};
 
 //Controller function for the SSE endpoint
 export const sseContoller = async (req: Request, res: Response) => {
-    const {userId}= getAuth(req);
+    const userId = req.user?.id;
     console.log('New Client connected', userId);
     if(!userId){
         return res.status(401).json({success:false, message: "Unauthorized"});

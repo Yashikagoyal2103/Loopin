@@ -1,5 +1,4 @@
 import type { Request, Response } from 'express';
-import { getAuth } from '@clerk/express';
 import fs from 'fs';
 import { imageKit } from '../config/imageKit.js';
 import Post from '../model/Post.js';
@@ -9,7 +8,7 @@ import mongoose from 'mongoose';
 //Add Post
 export const addPost = async (req: Request, res: Response) => {
     try {
-        const { userId } = getAuth(req);
+        const userId = req.user?.id;
         const { content, post_type } = req.body;
         
         const images = req.files as Express.Multer.File[] | undefined;
@@ -80,7 +79,7 @@ export const addPost = async (req: Request, res: Response) => {
 //Get all posts
 export const getFeedPosts = async (req: Request, res: Response) => {
     try {
-        const { userId } = getAuth(req);
+        const userId = req.user?.id;
         const user = await User.findById(userId);
         if(!user){
             return res.status(404).json({success:false, message:"User not found"});
@@ -104,7 +103,7 @@ export const getFeedPosts = async (req: Request, res: Response) => {
 //Like post
 export const likePost = async (req: Request, res: Response) => {
     try {
-        const { userId } = getAuth(req);
+        const userId = req.user?.id;
         const { postId } = req.body;
         if (!userId) {
             return res.status(401).json({ success: false, message: "User not authenticated" });

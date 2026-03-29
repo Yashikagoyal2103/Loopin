@@ -1,4 +1,3 @@
-import { useEffect } from 'react'
 import { Routes, Route } from 'react-router-dom'
 import Login from './pages/Login'
 import Feed from './pages/Feed'
@@ -8,22 +7,28 @@ import ChatBox from './pages/ChatBox'
 import CreatePost from './pages/CreatePost'
 import Profile from './pages/Profile'
 import Discover from './pages/Discover'
-import { useUser, useAuth } from '@clerk/clerk-react'
+import { useAuth } from './context/AuthContext'
 import Layout from './pages/Layout'
 import { Toaster } from 'react-hot-toast'
+import Loading from './components/Loading'
 
 const App = () => {
-  const { user }= useUser()
-  const { getToken } = useAuth();
+  const { user, loading } = useAuth()
+  // const {getToken} = useAuth()
 
-  useEffect (() =>{
-    if(user){
-      getToken().then((token) =>console.log(token))
-    }
-  },[user])
+  // useInsertionEffect(() => {
+  //   const fetchData= async ()= >{
+  //     if(user)=
+  //   }
+  // })
+
+  if (loading) {
+    return <Loading />
+  }
+
   return (
     <>
-    <Toaster/>
+      <Toaster/>
       <Routes>
         <Route path='/' element={!user ? <Login/> : <Layout/>}>
           <Route index element={<Feed/>}/>

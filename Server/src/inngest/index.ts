@@ -4,60 +4,245 @@ import sendEmail from "../config/nodeMailer.js";
 import { Connection } from "../model/connections.js";
 import Story from "../model/Story.js";
 import Message from "../model/Message.js";
+import mongoose from 'mongoose';
+import dotenv from 'dotenv';
 
+// Load environment variables
+dotenv.config();
+
+// Ensure database connection for Inngest functions
+const ensureDbConnection = async () => {
+  if (mongoose.connection.readyState !== 1) { // 1 = connected
+    console.log('📡 Connecting to MongoDB for Inngest...');
+    try {
+      await mongoose.connect(process.env.DATABASE_URL!.trim(), {
+                  dbName: 'LoopinDatabase'
+              });
+      console.log('✅ MongoDB connected for Inngest');
+    } catch (error) {
+      console.error('❌ MongoDB connection failed for Inngest:', error);
+      throw error;
+    }
+  }
+};
 // Create a client to send and receive events
 export const inngest = new Inngest({ id: "Loopin-app" });
 
 //Inngest func. to save data in the db
+// const syncUserCreation = inngest.createFunction(
+//   { id: "Sync-user-from-clerk" },
+//   {event:"clerk/user.created"},
+//   async({event})=>{
+//     const {id , first_name , last_name, email_addresses, image_url}= event.data
+//     let username= email_addresses[0].email_address.split('@')[0]
+
+//     //Check availability of username
+//     const user = await User.findOne({username})
+
+//     if (user) {
+//         username= username + Math.floor(Math.random() * 1000)
+//     }
+
+//     const userData ={
+//         _id:id,
+//         email: email_addresses[0].email_address,
+//         full_name: first_name + " "+ last_name,
+//         profile_picture: image_url,
+//         username
+//     } 
+//     await User.create(userData);
+//   }
+// ); 
+// const syncUserCreation = inngest.createFunction(
+//   { id: "Sync-user-from-clerk" },
+//   { event: "clerk/user.created" },
+//   async ({ event, logger }) => {
+//     try {
+//       console.log('🔄 Processing clerk/user.created event');
+      
+//       const { id, first_name, last_name, email_addresses, image_url, username: clerkUsername } = event.data;
+      
+//       // Debug: Log the incoming data
+//       console.log('Event data:', { id, first_name, last_name, email_addresses, image_url });
+      
+//       if (!email_addresses || email_addresses.length === 0) {
+//         throw new Error('No email addresses provided');
+//       }
+      
+//       const email = email_addresses[0].email_address;
+//       console.log('User email:', email);
+      
+//       // Check if user already exists
+//       const existingUser = await User.findById(id);
+//       if (existingUser) {
+//         console.log('⚠️ User already exists in database:', existingUser.email);
+//         return { success: true, message: 'User already exists' };
+//       }
+      
+//       // Generate username
+//       let username = clerkUsername || email.split('@')[0];
+      
+//       // Check username availability
+//       const userWithSameUsername = await User.findOne({ username });
+//       if (userWithSameUsername) {
+//         username = username + Math.floor(Math.random() * 1000);
+//         console.log('Username taken, using:', username);
+//       }
+      
+//       // Create user with ALL required fields from your schema
+//       const userData = {
+//         _id: id,
+//         email: email,
+//         username: username,
+//         full_name: `${first_name || ''} ${last_name || ''}`.trim(),
+//         profile_picture: image_url || '',
+//         bio: "Hey there! I am using Loopin.", // From schema default
+//         cover_picture: "", // From schema default
+//         location: "", // From schema default
+//         followers: [], // From schema default
+//         following: [], // From schema default
+//         connections: [] // From schema default
+//       };
+      
+//       console.log('Creating user with data:', userData);
+      
+//       const createdUser = await User.create(userData);
+//       console.log('✅ User created successfully:', createdUser._id);
+      
+//       return { success: true, userId: createdUser._id };
+      
+//     } catch (error ) {
+//       console.error('❌ Error in syncUserCreation:', (error as Error).message);
+//       console.error('Error details:', {
+//         name: (error as Error).name,
+//         message: (error as Error).message,
+
+//       });
+      
+//       throw error; // Re-throw to mark as failed in Inngest
+//     }
+//   }
+// );
 const syncUserCreation = inngest.createFunction(
-  { id: "Sync-user-from-clerk" },
-  {event:"clerk/user.created"},
-  async({event})=>{
-    const {id , first_name , last_name, email_address, image_url}= event.data
-    let username= email_address[0].email.address.split('@')[0]
-
-    //Check availability of username
-    const user = await User.findOne({username})
-
-    if (user) {
-        username= username + Math.floor(Math.random() * 1000)
+  { id: "sync-user-creation" },
+  { event: "app/user.created" },
+  async ({ event, logger }) => {
+    try {
+      console.log('🔄 Processing app/user.created event');
+      
+      // ✅ ENSURE DATABASE CONNECTION FIRST
+      await ensureDbConnection();
+      console.log('✅ Database connection verified');
+      
+      const { userId, email, full_name, username, authProvider } = event.data;
+      
+      // Debug: Log the incoming data
+      console.log('📋 Event data:', { 
+        userId, 
+        email, 
+        full_name, 
+        username,
+        authProvider
+      });
+      
+      if (!email || !userId) {
+        throw new Error('Email and userId are required');
+      }
+      
+      // ✅ Check if user already exists
+      const existingUser = await User.findById(userId);
+      if (existingUser) {
+        console.log('⚠️ User already exists in database:', existingUser.email);
+        return { success: true, message: 'User already exists' };
+      }
+      
+      // ✅ Generate username if not provided
+      let finalUsername = username || email.split('@')[0];
+      console.log('👤 Generated username:', finalUsername);
+      
+      // ✅ Check username availability
+      const userWithSameUsername = await User.findOne({ username: finalUsername });
+      if (userWithSameUsername) {
+        finalUsername = finalUsername + Math.floor(Math.random() * 1000);
+        console.log('🔀 Username taken, using:', finalUsername);
+      }
+      
+      // ✅ Create user (user is already created in authController, this is just for logging/notifications)
+      console.log('📝 User created via:', authProvider || 'local');
+      
+      // User is already created in authController, just log success
+      console.log('✅ User creation event processed:', userId);
+      
+      return { 
+        success: true, 
+        userId: userId,
+        email: email 
+      };
+      
+    } catch (error) {
+      console.error('❌ CRITICAL ERROR in syncUserCreation:');
+      console.error('Error name:', (error as Error).name);
+      console.error('Error message:', (error as Error).message);
+      console.error('Error stack:', (error as Error).stack);
+      
+      // Throw the error so Inngest marks the function as failed
+      throw error;
     }
-
-    const userData ={
-        _id:id,
-        email: email_address[0].email_address,
-        full_name: first_name + " "+ last_name,
-        profile_picture: image_url,
-        username
-    } 
-    await User.create(userData);
   }
-); 
-
-//Inngest func. to update data in the db
+);
 const syncUserUpdation = inngest.createFunction(
-    { id: "update-user-from-clerk" },
-    {event:"clerk/user.updated"},
-    async({event})=>{
-        const {id , first_name , last_name, email_address, image_url}= event.data
-
-    const updateUserData = {
-        email: email_address[0].email_address,
-        full_name: first_name+ ' ' + last_name,
-        profile_picture: image_url
+  { id: "sync-user-updation" },
+  { event: "app/user.updated" },
+  async ({ event }) => {
+    console.log('Inngest: Processing app/user.updated', event.data);
+    
+    // Ensure database connection
+    await ensureDbConnection();
+    
+    const { userId, email, full_name, profile_picture } = event.data;
+    
+    if (!userId) {
+      console.error('No userId found in update event:', event.data);
+      return;
     }
-    await User.findByIdAndUpdate(id, updateUserData)
+    
+    const updateUserData: any = {};
+    if (email) updateUserData.email = email;
+    if (full_name) updateUserData.full_name = full_name;
+    if (profile_picture) updateUserData.profile_picture = profile_picture;
+    
+    console.log('Updating user:', userId, updateUserData);
+    
+    try {
+      await User.findByIdAndUpdate(userId, updateUserData, { new: true });
+      console.log('User updated successfully');
+    } catch (error) {
+      console.error('Error updating user:', error);
+      throw error; // Throw so Inngest marks as failed
+    }
   }
-)
-
+);
 
 //Inngest func. to delete data in the db
 const syncUserDeletion = inngest.createFunction(
-  { id: "delete-user-with-clerk" },
-  {event:"clerk/user.deleted"},
+  { id: "sync-user-deletion" },
+  {event:"app/user.deleted"},
   async({event})=>{
-    const {id }= event.data
-    await User.findByIdAndDelete(id)
+    // Ensure database connection
+    await ensureDbConnection();
+    
+    const { userId } = event.data
+    if (!userId) {
+      console.error('No userId found in delete event');
+      return;
+    }
+    try {
+      await User.findByIdAndDelete(userId)
+      console.log('User deleted successfully');
+    } catch (error) {
+      console.error('Error deleting user:', error);
+      throw error;
+    }
     }
 );
 
@@ -67,6 +252,9 @@ const sendNewConnectionRequestRemainder = inngest.createFunction(
   { id: 'send-new-connection-request-remainder' },
   { event: "app/connection-request" },
   async ({ event, step }) => {
+    // Ensure database connection
+    await ensureDbConnection();
+    
     const { connectionId } = event.data;
 
     await step.run('send-connection-request-mail', async () => {
@@ -146,6 +334,9 @@ const deleteStory = inngest.createFunction(
   {id: 'story-delete'},
   {event: 'app/story-created'},
   async({event, step})=>{
+    // Ensure database connection
+    await ensureDbConnection();
+    
     const { storyId } = event.data;
     const in24Hours = new Date(Date.now() + 24 * 60 * 60 * 1000);
     await step.sleepUntil("wait-24-hours", in24Hours);
@@ -161,6 +352,9 @@ const sendNotificationOfUnseenMessages = inngest.createFunction(
   { id: 'send-unseen-messages-notification' },
   { cron: "TZ=America/New_York 0 9 * * *" }, // Every day at 9 AM
   async ({ step }) => {
+    // Ensure database connection
+    await ensureDbConnection();
+    
     const messages = await Message.find({ seen: false }).populate('to_user_id');
     
     const unseenCount = new Map();
@@ -203,6 +397,7 @@ const sendNotificationOfUnseenMessages = inngest.createFunction(
 );
 
 // Create an empty array where we'll export future Inngest functions
+// Remove old Clerk-based functions, keep only app events
 export const functions = [
     syncUserCreation,
     syncUserUpdation,

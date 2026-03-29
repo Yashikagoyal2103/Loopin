@@ -1,6 +1,5 @@
 import User from "../model/User.js";
 import type { Request, Response } from 'express';
-import { getAuth } from '@clerk/express';
 import fs from 'fs';
 import { imageKit } from "../config/imageKit.js";
 import { Connection } from "../model/connections.js";
@@ -8,23 +7,54 @@ import Post from "../model/Post.js";
 import { inngest } from "../inngest/index.js";
 
 //get user data using userId
+// export const getUserData = async (req: Request, res: Response) => {
+//     try {
+//         const userId = req.user?.id;
+//         const user = await User.findById(userId);
+//         if (!user) {
+//             return res.status(404).json({ success: false, message: "User not found" });
+//         }
+//     }catch(error:unknown){
+//         console.error("Error fetching user data:", error as Error);
+//         res.json({ success: false, message: (error as Error).message });
+//     }
+// }
 export const getUserData = async (req: Request, res: Response) => {
     try {
-        const { userId } = getAuth(req);
+        const userId = req.user?.id;
+        if (!userId) {
+            return res.status(401).json({ 
+                success: false, 
+                message: "Not authenticated" 
+            });
+        }
+        
         const user = await User.findById(userId);
         if (!user) {
-            return res.status(404).json({ success: false, message: "User not found" });
+            return res.status(404).json({ 
+                success: false, 
+                message: "User not found" 
+            });
         }
-    }catch(error:unknown){
-        console.error("Error fetching user data:", error as Error);
-        res.json({ success: false, message: (error as Error).message });
+        
+        return res.json({ 
+            success: true, 
+            user 
+        });
+        
+    } catch(error: unknown) {
+        console.error("Error fetching user data:", error);
+        return res.status(500).json({ 
+            success: false, 
+            message: (error as Error).message 
+        });
     }
 }
 
 //update user data 
 export const updateUserData = async (req: Request, res: Response) => {
     try {
-        const { userId } = getAuth(req);
+        const userId = req.user?.id;
         if (!userId) {
             return res.status(401).json({ success: false, message: "User not authenticated" });
         }
@@ -105,7 +135,7 @@ export const updateUserData = async (req: Request, res: Response) => {
 //Find users using useranme, email, loaction, name
 export const discoverUser = async (req: Request, res: Response) => {
     try {
-        const { userId } = getAuth(req);
+        const userId = req.user?.id;
         const { input }= req.body;
          const allUsers = await User.find(
             {
@@ -129,7 +159,7 @@ export const discoverUser = async (req: Request, res: Response) => {
 //follow user 
 export const followUser = async (req: Request, res: Response) => {
     try {
-        const { userId } = getAuth(req);
+        const userId = req.user?.id;
         const { id }= req.body;
         if (!userId) {
             return res.status(401).json({ success: false, message: "User not authenticated" });
@@ -176,7 +206,7 @@ export const followUser = async (req: Request, res: Response) => {
 //unfollow user
 export const unfollowUser = async (req: Request, res: Response) => {
     try {
-        const { userId } = getAuth(req);
+        const userId = req.user?.id;
         const { id }= req.body;
         if (!userId) {
             return res.status(401).json({ success: false, message: "User not authenticated" });
@@ -212,7 +242,7 @@ export const unfollowUser = async (req: Request, res: Response) => {
 // send connection request
 export const sendConnectionRequest = async (req: Request, res: Response) => {
     try {
-        const { userId } = getAuth(req);
+        const userId = req.user?.id;
         const { id }= req.body;
         if (!userId) {
             return res.status(401).json({ success: false, message: "User not authenticated" });
@@ -259,7 +289,7 @@ export const sendConnectionRequest = async (req: Request, res: Response) => {
 //get user connections
 export const getUserConnections = async (req: Request, res: Response) => {
     try {
-        const { userId } = getAuth(req);
+        const userId = req.user?.id;
 
         const user= await User.findById(userId).populate('connections followers following');
         if (!user) {
@@ -286,7 +316,7 @@ export const getUserConnections = async (req: Request, res: Response) => {
 //Accept the connection request
 export const acceptConnectionRequest = async (req: Request, res: Response) => {
     try {
-        const { userId } = getAuth(req);
+        const userId = req.user?.id;
         const { id }= req.body;
         if(!userId){
             return res.status(401).json({ success: false, message: "User not authenticated" });
