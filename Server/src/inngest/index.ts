@@ -360,8 +360,8 @@ const sendNotificationOfUnseenMessages = inngest.createFunction(
     const unseenCount = new Map();
     
     messages.forEach(message => {
-      // Convert ObjectId to string for use as key
-      const userId = message.to_user_id._id.toString();
+      const toUser = message.to_user_id as unknown as { _id?: string };
+      const userId = (toUser?._id || String(message.to_user_id)).toString();
       unseenCount.set(userId, (unseenCount.get(userId) || 0) + 1);
     });
 

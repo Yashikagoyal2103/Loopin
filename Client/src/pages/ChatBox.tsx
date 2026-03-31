@@ -1,24 +1,104 @@
 import { useState, useRef ,useEffect } from 'react'
-import { dummyMessagesData, dummyUserData } from '../assets/assets'
 import {type User } from '../assets/assets'
 import { ImageIcon, SendHorizonal } from 'lucide-react'
+import { useDispatch, useSelector } from 'react-redux'
+import type { AppDispatch, RootState } from '../app/store'
+import { useParams } from 'react-router-dom'
+import toast from 'react-hot-toast'
+import api from '../api/axios'
+import { addMessage, fetchMessages, resetMessages } from '../features/messages/messagesSlice'
 
 
 const ChatBox = () => {
 
-  const messages = dummyMessagesData
+  const {messages} = useSelector((state:RootState) => state.messages)
+  const { userId } = useParams();
+  const dispatch = useDispatch<AppDispatch>();
+
   const [text, setText] = useState('')
   const [image, setImage ] = useState<File | null>(null)
-  const [user, setUser] = useState<User>(dummyUserData)
+  const [user, setUser] = useState<User | null>(null)
   const messageEndRef = useRef<HTMLDivElement>(null)
 
-  const sendMessage = async() =>{
+  const connections = useSelector((state: RootState) => state.connections.connections)
 
+  //Message type
+  interface Message {
+    _id: string;
+    to_user_id: string;
+    text: string;
+    message_type: string;
+    media_url?: string;
+    createdAt: string;
   }
+
+
+   const fetchUserMessages = async () => {
+    try {
+      if (!userId) {
+        toast.error('No user selected for messaging');
+        return;
+      }
+      dispatch(fetchMessages({ userId }))
+    } catch (error: unknown) {
+      toast.error((error as Error).message);
+    }
+  };
+  const sendMessage = async() =>{
+    try{
+      if(!text && !image) return 
+      if (!userId) {
+        toast.error('No user selected for messaging');
+        return;
+      }
+
+      const formData = new FormData()
+      formData.append('to_user_id' , userId)
+      formData.append('text', text);
+      if(image){
+        formData.append('image', image);
+      }
+            
+      const { data } = await api.post('/api/message/send', formData)
+      if(data.success){
+        setText('')
+        setImage(null)
+        dispatch(addMessage(data.message))
+      }else{
+        throw new Error(data.message)
+      }
+    }catch( error:unknown){
+      toast.error((error as Error).message)
+    }
+  }
+
+  useEffect(() =>{
+    fetchUserMessages()
+    
+    return ()=> {
+      dispatch(resetMessages())
+    }
+  },[userId])
+
+  useEffect(() => {
+    if(connections.length >0 && userId){
+      const user= connections.find((connection:User) => connection._id === userId)
+      setUser(user || null)
+    }
+  },[connections,userId])
+
 
   useEffect(() =>{
     messageEndRef.current?.scrollIntoView({behavior: "smooth"})
   }, [messages])
+
+  if (!user) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <p className="text-gray-500">Select a user to start chatting</p>
+      </div>
+    );
+  }
 
   return user && (
     <div className='flex flex-col h-screen'>
@@ -32,7 +112,7 @@ const ChatBox = () => {
       <div className='p-5 md:px-10 h-full overflow-y-scroll'>
         <div className='space-y-4 max-w-4xl mx-auto'>
           {
-            messages.slice().sort((a,b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()).map((message, index) =>(
+            messages.slice().sort((a:Message,b:Message) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()).map((message:Message, index) =>(
               <div key={index} className={`flex flex-col ${message.to_user_id !== user._id ? 'items-start' : 'items-end'} `}>
                 <div className={`p-2 text-sm max-w-sm bg-white text-slate-700 rounded-lg shadow ${message.to_user_id !== user._id ? 
                   'rounded-bl-none' : 'rounded-br-none'}`}>

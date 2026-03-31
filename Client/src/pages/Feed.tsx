@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react';
-import { dummyPostsData } from '../assets/assets';
 import Loading from '../components/Loading';
 import { type Post } from '../assets/assets';     //type is written to separate value import from interface/type import
 import StoriesBar from '../components/StoriesBar';
 import PostCard from '../components/PostCard'
 import RecentMessages from '../components/RecentMessages';
 import {assets} from '../assets/assets';
+import api from '../api/axios';
+import toast from 'react-hot-toast';
 
 
 const Feed = () => {
@@ -13,7 +14,18 @@ const Feed = () => {
   const [ loading , setLoading ] = useState<boolean>(true);
 
   const fetchFeeds = async () => {
-    setFeeds(dummyPostsData)
+    try{
+      setLoading(true)
+      const {data} = await api.get('/api/post/feed')
+
+      if(data.success){
+        setFeeds(data.posts)
+      }else{
+        toast.error(data.message)
+      }
+    }catch(error :unknown){
+      toast.error((error as Error).message)
+    }
     setLoading(false)
   }
 

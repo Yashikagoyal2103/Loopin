@@ -1,67 +1,264 @@
 import User from "../model/User.js";
 import type { Request, Response } from 'express';
+import { getAuth } from '../middlewares/auth.js';
 import fs from 'fs';
 import { imageKit } from "../config/imageKit.js";
 import { Connection } from "../model/connections.js";
 import Post from "../model/Post.js";
 import { inngest } from "../inngest/index.js";
 
-//get user data using userId
-// export const getUserData = async (req: Request, res: Response) => {
+const normalizeUser = (user: any) => {
+    if (!user) return user;
+    const doc = user.toObject ? user.toObject() : user;
+    if (!doc.cover_photo && doc.cover_picture) {
+        doc.cover_photo = doc.cover_picture;
+    }
+    return doc;
+};
+
+// controllers/userController.ts
+export const getUserData = async (req: Request, res: Response) => {
+    try {
+        const { userId } = getAuth(req);
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: 'User not found'
+            });
+        }
+        return res.status(200).json({
+            success: true,
+            user: normalizeUser(user)
+        });
+    } catch (error: unknown) {
+        console.error('Error in getUserData:', error);
+        return res.status(500).json({
+            success: false,
+            message: (error as Error).message
+        });
+    }
+};
+
+//update user data 
+// export const updateUserData = async (req: Request, res: Response) => {
 //     try {
-//         const userId = req.user?.id;
-//         const user = await User.findById(userId);
-//         if (!user) {
+//         const { userId } = getAuth(req);
+//         if (!userId) {
+//             return res.status(401).json({ success: false, message: "User not authenticated" });
+//         }
+
+//         let { username, bio, location , full_name } = req.body;
+
+//         const tempUser= await User.findById(userId);
+//         if (!tempUser) {
 //             return res.status(404).json({ success: false, message: "User not found" });
 //         }
-//     }catch(error:unknown){
-//         console.error("Error fetching user data:", error as Error);
+
+//         // Provide default value if username is undefined/null
+//         if (!username) {
+//             username = tempUser.username;
+//         }
+
+//         if (tempUser.username !== username) {
+//             const existingUser = await User.findOne({ username });
+//             if (existingUser) {
+//                 // Username is already taken, revert to original
+//                 username = tempUser.username;
+//             }
+//         }
+
+//         const updatedData: any = {
+//             username,
+//             bio: bio || tempUser.bio,
+//             location: location || tempUser.location,
+//             full_name: full_name || tempUser.full_name
+//         };
+
+//         const profile = req.files && 'profile' in req.files ? req.files.profile[0] : null;
+//         const cover = req.files && 'cover' in req.files ? req.files.cover[0] : null;
+
+//         if (profile) {
+//             const buffer= fs.readFileSync(profile.path);
+//             const responce= await imageKit.upload({
+//                 file:buffer,
+//                 fileName:profile.originalname,
+//             })
+//             const url= imageKit.url({
+//                 path:responce.filePath,
+//                 transformation: [
+//                     {quality: 'auto'},
+//                     {format :'webp'},
+//                     {width: '512'}
+//                 ]
+//             })
+//             updatedData.profile_picture =url;
+//         }
+
+//         if (cover) {
+//             const buffer= fs.readFileSync(cover.path);
+//             const responce= await imageKit.upload({
+//                 file:buffer,
+//                 fileName:cover.originalname,
+//             })
+//             const url= imageKit.url({
+//                 path:responce.filePath,
+//                 transformation: [
+//                     {quality: 'auto'},
+//                     {format :'webp'},
+//                     {width: '1280'}
+//                 ]
+//             })
+//             updatedData.cover_photo =url;
+//         }
+
+//         const user= await User.findByIdAndUpdate(userId, updatedData, {new: true})
+//         res.json({ success: true,user,  message: "Profile updated successfully" });
+
+//     }catch(error: unknown){
+//         console.error("Error fetching user data:", error);
 //         res.json({ success: false, message: (error as Error).message });
 //     }
 // }
-export const getUserData = async (req: Request, res: Response) => {
-    try {
-        const userId = req.user?.id;
-        if (!userId) {
-            return res.status(401).json({ 
-                success: false, 
-                message: "Not authenticated" 
-            });
-        }
-        
-        const user = await User.findById(userId);
-        if (!user) {
-            return res.status(404).json({ 
-                success: false, 
-                message: "User not found" 
-            });
-        }
-        
-        return res.json({ 
-            success: true, 
-            user 
-        });
-        
-    } catch(error: unknown) {
-        console.error("Error fetching user data:", error);
-        return res.status(500).json({ 
-            success: false, 
-            message: (error as Error).message 
-        });
-    }
-}
 
-//update user data 
+// export const updateUserData = async (req: Request, res: Response) => {
+//     try {
+//         const { userId } = getAuth(req);
+//         if (!userId) {
+//             return res.status(401).json({ success: false, message: "User not authenticated" });
+//         }
+
+//         console.log('=== UPDATE USER DATA START ===');
+//         console.log('Request files:', req.files);
+//         console.log('Request body:', req.body);
+
+//         let { username, bio, location, full_name } = req.body;
+ 
+//         const tempUser = await User.findById(userId);
+//         if (!tempUser) {
+//             return res.status(404).json({ success: false, message: "User not found" });
+//         }
+
+//         if (!username) {
+//             username = tempUser.username;
+//         }
+
+//         if (tempUser.username !== username) {
+//             const existingUser = await User.findOne({ username });
+//             if (existingUser) {
+//                 username = tempUser.username;
+//             }
+//         }
+
+//         const updatedData: any = {
+//             username,
+//             bio: bio || tempUser.bio,
+//             location: location || tempUser.location,
+//             full_name: full_name || tempUser.full_name
+//         };
+
+//         // Check if files exist
+//         const hasProfile = req.files && 'profile' in req.files;
+//         const hasCover = req.files && 'cover' in req.files;
+        
+//         console.log('Has profile file:', hasProfile);
+//         console.log('Has cover file:', hasCover);
+
+//         const profile = hasProfile && req.files ? req.files.profile_picture[0] : null;
+//         const cover = hasCover && req.files ? req.files.cover[0] : null;
+
+//         if (profile) {
+//             console.log('Processing profile picture:', profile.originalname);
+//             try {
+//                 const buffer = fs.readFileSync(profile.path);
+//                 const response = await imageKit.upload({
+//                     file: buffer,
+//                     fileName: profile.originalname,
+//                 });
+//                 const url = imageKit.url({
+//                     path: response.filePath,
+//                     transformation: [
+//                         { quality: 'auto' },
+//                         { format: 'webp' },
+//                         { width: '512' }
+//                     ]
+//                 });
+//                 updatedData.profile_picture = url;
+//                 console.log('Profile picture uploaded successfully:', url);
+//             } catch (profileError) {
+//                 console.error('Error uploading profile picture:', profileError);
+//             }
+//         }
+
+//         if (cover) {
+//             console.log('Processing cover photo:', cover.originalname);
+//             console.log('Cover file size:', cover.size);
+//             console.log('Cover file path:', cover.path);
+            
+//             try {
+//                 const buffer = fs.readFileSync(cover.path);
+//                 console.log('Cover buffer size:', buffer.length);
+                
+//                 const response = await imageKit.upload({
+//                     file: buffer,
+//                     fileName: cover.originalname,
+//                 });
+//                 console.log('ImageKit response for cover:', response);
+                
+//                 const url = imageKit.url({
+//                     path: response.filePath,
+//                     transformation: [
+//                         { quality: 'auto' },
+//                         { format: 'webp' },
+//                         { width: '1280' }
+//                     ]
+//                 });
+//                 updatedData.cover_photo = url;
+//                 console.log('Cover photo uploaded successfully:', url);
+//             } catch (coverError) {
+//                 console.error('Error uploading cover photo:', coverError);
+//                 // Don't throw, just log the error
+//             }
+//         } else {
+//             console.log('No cover photo file found in request');
+//         }
+
+//         console.log('Final updatedData before save:', {
+//             ...updatedData,
+//             profile_picture: updatedData.profile_picture ? 'exists' : 'not set',
+//             cover_photo: updatedData.cover_photo ? 'exists' : 'not set'
+//         });
+
+//         const user = await User.findByIdAndUpdate(userId, updatedData, { new: true });
+        
+//         if (!user) {
+//             return res.status(404).json({ success: false, message: "User not found after update" });
+//         }
+
+//         console.log('User after update:', {
+//             id: user._id,
+//             profile_picture: user.profile_picture ? 'exists' : 'not set',
+//             cover_photo: user.cover_picture ? 'exists' : 'not set'
+//         });
+        
+//         res.json({ success: true, user, message: "Profile updated successfully" });
+
+//     } catch (error: unknown) {
+//         console.error("Error updating user data:", error);
+//         res.status(500).json({ success: false, message: (error as Error).message });
+//     }
+// }
+
 export const updateUserData = async (req: Request, res: Response) => {
     try {
-        const userId = req.user?.id;
+        const { userId } = getAuth(req);
         if (!userId) {
             return res.status(401).json({ success: false, message: "User not authenticated" });
         }
 
-        let { username, bio, location , full_name } = req.body;
-
-        const tempUser= await User.findById(userId);
+        let { username, bio, location, full_name } = req.body;
+ 
+        const tempUser = await User.findById(userId);
         if (!tempUser) {
             return res.status(404).json({ success: false, message: "User not found" });
         }
@@ -74,7 +271,6 @@ export const updateUserData = async (req: Request, res: Response) => {
         if (tempUser.username !== username) {
             const existingUser = await User.findOne({ username });
             if (existingUser) {
-                // Username is already taken, revert to original
                 username = tempUser.username;
             }
         }
@@ -86,56 +282,82 @@ export const updateUserData = async (req: Request, res: Response) => {
             full_name: full_name || tempUser.full_name
         };
 
-        const profile = req.files && 'profile' in req.files ? req.files.profile[0] : null;
-        const cover = req.files && 'cover' in req.files ? req.files.cover[0] : null;
-
-        if (profile) {
-            const buffer= fs.readFileSync(profile.path);
-            const responce= await imageKit.upload({
-                file:buffer,
-                fileName:profile.originalname,
-            })
-            const url= imageKit.url({
-                path:responce.filePath,
-                transformation: [
-                    {quality: 'auto'},
-                    {format :'webp'},
-                    {width: '512'}
-                ]
-            })
-            updatedData.profile_picture =url;
+        // Safe file checking
+        if (req.files) {
+            const files = req.files as any;
+            
+            // Handle profile picture
+            if (files.profile && files.profile[0]) {
+                const profile = files.profile[0];
+                try {
+                    const buffer = fs.readFileSync(profile.path);
+                    const response = await imageKit.upload({
+                        file: buffer,
+                        fileName: profile.originalname,
+                    });
+                    const url = imageKit.url({
+                        path: response.filePath,
+                        transformation: [
+                            { quality: 'auto' },
+                            { format: 'webp' },
+                            { width: '512' }
+                        ]
+                    });
+                    updatedData.profile_picture = url;
+                    console.log('Profile picture uploaded');
+                } catch (error) {
+                    console.error('Profile upload error:', error);
+                }
+            }
+            
+            // Handle cover photo
+            if (files.cover && files.cover[0]) {
+                const cover = files.cover[0];
+                try {
+                    const buffer = fs.readFileSync(cover.path);
+                    const response = await imageKit.upload({
+                        file: buffer,
+                        fileName: cover.originalname,
+                    });
+                    const url = imageKit.url({
+                        path: response.filePath,
+                        transformation: [
+                            { quality: 'auto' },
+                            { format: 'webp' },
+                            { width: '1280' }
+                        ]
+                    });
+                    updatedData.cover_photo = url;
+                    console.log('Cover photo uploaded successfully:', url);
+                } catch (error) {
+                    console.error('Cover upload error:', error);
+                }
+            }
         }
 
-        if (cover) {
-            const buffer= fs.readFileSync(cover.path);
-            const responce= await imageKit.upload({
-                file:buffer,
-                fileName:cover.originalname,
-            })
-            const url= imageKit.url({
-                path:responce.filePath,
-                transformation: [
-                    {quality: 'auto'},
-                    {format :'webp'},
-                    {width: '1280'}
-                ]
-            })
-            updatedData.cover_photo =url;
+        if (updatedData.cover_photo) {
+            // Keep legacy field in sync for older UI reads.
+            updatedData.cover_picture = updatedData.cover_photo;
         }
 
-        const user= await User.findByIdAndUpdate(userId, updatedData, {new: true})
-        res.json({ success: true,user,  message: "Profile updated successfully" });
+        const user = await User.findByIdAndUpdate(userId, updatedData, { new: true });
+        
+        if (!user) {
+            return res.status(404).json({ success: false, message: "User not found" });
+        }
+        
+        res.json({ success: true, user: normalizeUser(user), message: "Profile updated successfully" });
 
-    }catch(error: unknown){
-        console.error("Error fetching user data:", error);
-        res.json({ success: false, message: (error as Error).message });
+    } catch (error: unknown) {
+        console.error("Error updating user data:", error);
+        res.status(500).json({ success: false, message: (error as Error).message });
     }
 }
 
 //Find users using useranme, email, loaction, name
 export const discoverUser = async (req: Request, res: Response) => {
     try {
-        const userId = req.user?.id;
+        const { userId } = getAuth(req);
         const { input }= req.body;
          const allUsers = await User.find(
             {
@@ -159,8 +381,8 @@ export const discoverUser = async (req: Request, res: Response) => {
 //follow user 
 export const followUser = async (req: Request, res: Response) => {
     try {
-        const userId = req.user?.id;
-        const { id }= req.body;
+        const { userId } = getAuth(req);
+        const id = (req.params.id || req.body.id) as string;
         if (!userId) {
             return res.status(401).json({ success: false, message: "User not authenticated" });
         }
@@ -206,8 +428,8 @@ export const followUser = async (req: Request, res: Response) => {
 //unfollow user
 export const unfollowUser = async (req: Request, res: Response) => {
     try {
-        const userId = req.user?.id;
-        const { id }= req.body;
+        const { userId } = getAuth(req);
+        const id = (req.params.id || req.body.id) as string;
         if (!userId) {
             return res.status(401).json({ success: false, message: "User not authenticated" });
         }
@@ -242,7 +464,7 @@ export const unfollowUser = async (req: Request, res: Response) => {
 // send connection request
 export const sendConnectionRequest = async (req: Request, res: Response) => {
     try {
-        const userId = req.user?.id;
+        const { userId } = getAuth(req);
         const { id }= req.body;
         if (!userId) {
             return res.status(401).json({ success: false, message: "User not authenticated" });
@@ -289,7 +511,7 @@ export const sendConnectionRequest = async (req: Request, res: Response) => {
 //get user connections
 export const getUserConnections = async (req: Request, res: Response) => {
     try {
-        const userId = req.user?.id;
+        const { userId } = getAuth(req);
 
         const user= await User.findById(userId).populate('connections followers following');
         if (!user) {
@@ -316,7 +538,7 @@ export const getUserConnections = async (req: Request, res: Response) => {
 //Accept the connection request
 export const acceptConnectionRequest = async (req: Request, res: Response) => {
     try {
-        const userId = req.user?.id;
+        const { userId } = getAuth(req);
         const { id }= req.body;
         if(!userId){
             return res.status(401).json({ success: false, message: "User not authenticated" });
@@ -364,7 +586,7 @@ export const getUserProfile = async (req: Request, res: Response) => {
         }
 
         const posts= await Post.find({user: profileId}).populate('user')
-        res.json({ success: true, profile, posts });
+        res.json({ success: true, profile: normalizeUser(profile), posts });
 
     }catch (error:unknown){
         console.log(error as Error);

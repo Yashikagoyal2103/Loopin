@@ -1,12 +1,25 @@
 import express from 'express';
 import { upload } from '../config/multer.js';
-import { addPost, getFeedPosts, likePost } from '../controllers/postController.js';
+import { 
+    addPost, 
+    getFeedPosts, 
+    likePost,
+    addComment,
+    getComments,
+    sharePost
+} from '../controllers/postController.js';
 import { protect } from '../middlewares/auth.js';
 
 const postRouter = express.Router();
 
-postRouter.post('/add', upload.array('images', 4), protect, addPost);
+// Existing routes
+postRouter.post('/add', protect, upload.array('images', 4), addPost);
 postRouter.get('/feed', protect, getFeedPosts);
-postRouter.post('/like', protect, likePost)
+postRouter.post('/like', protect, likePost);
+
+// New routes for comments and shares
+postRouter.post('/comment', protect, addComment);
+postRouter.get('/comments/:postId', protect, getComments);
+postRouter.post('/share', protect, sharePost);
 
 export default postRouter;

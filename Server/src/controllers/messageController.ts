@@ -1,10 +1,10 @@
 import type { Request, Response } from 'express';
+import { getAuth } from '../middlewares/auth.js';
 import fs from 'fs';
 import { imageKit } from '../config/imageKit.js';
 import User from '../model/User.js';
 import { inngest } from '../inngest/index.js';
 import Message from '../model/Message.js';
-import { getAuth } from '../middlewares/auth.js';
 
 // Define the type for connections object
 interface Connections {
@@ -16,7 +16,7 @@ const connections: Connections = {};
 
 //Controller function for the SSE endpoint
 export const sseContoller = async (req: Request, res: Response) => {
-    const userId = req.user?.id;
+    const {userId}= getAuth(req);
     console.log('New Client connected', userId);
     if(!userId){
         return res.status(401).json({success:false, message: "Unauthorized"});
@@ -48,14 +48,18 @@ export const sendMessage = async (req: Request, res: Response) => {
         const { userId }= getAuth(req);
         const {to_user_id, text } = req.body;
         const image = req.file;
-        if(!image){
-            return res.status(400).json({ success: false, message: "Image is required" });
-        }
+        // if(!image){
+        //     return res.status(400).json({ success: false, message: "Image is required" });
+        // }
 
         let media_url="";
         let message_type=image ?'image' :'text';
 
-        if(message_type === 'image'){
+         if (message_type === 'image' && !image) {
+            return res.status(400).json({ success: false, message: "Image is required for image messages" });
+        }
+
+        if(message_type === 'image' && image){
             const fileBuffer= fs.readFileSync(image.path);
             const response= await imageKit.upload({
                 file:fileBuffer,
@@ -79,13 +83,12 @@ export const sendMessage = async (req: Request, res: Response) => {
             media_url
         });
 
-        res.json({success: true, message: 'Message sent successfully'});
+        const messageWithUserData = await Message.findById(message._id).populate('from_user_id');
 
-        //Send SSE event to the recipient if connected
-        const meassgeWithUserData = await Message.findById(message._id).populate('from_user_id');
+        res.json({success: true, message: messageWithUserData});
 
         if(connections[to_user_id]){
-            connections[to_user_id].write(`data: ${JSON.stringify(meassgeWithUserData)}\n\n`);
+            connections[to_user_id].write(`data: ${JSON.stringify(messageWithUserData)}\n\n`);
         }
 
     }catch (error: unknown) {
@@ -121,7 +124,7 @@ export const getChatMessages = async (req: Request, res: Response) => {
     }
 }
 
-//het user recent messages
+//get user recent messages
 export const getUserRecentMessages = async (req: Request, res: Response) => {
     try{
         const { userId }= getAuth(req);

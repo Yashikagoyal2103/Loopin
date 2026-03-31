@@ -36,18 +36,7 @@ export interface Story {
   updatedAt: string;
 }
 
-export interface Post {
-  _id: string;
-  user: User;
-  content: string;
-  image_urls: string[];
-  post_type: 'text' | 'text_with_image' | 'image' | 'video';
-  likes_count: string[];
-  createdAt: string;
-  updatedAt: string;
-}
-
-interface MenuItem {
+export interface MenuItem {
   to: string;
   label: string;
   Icon: React.ComponentType;
@@ -65,7 +54,7 @@ export interface RecentMessage {
     "updatedAt": string,
 }
 
-interface dummyMessage {
+export interface dummyMessage {
     "_id": string,
     "from_user_id":string,
     "to_user_id": string,
@@ -76,6 +65,39 @@ interface dummyMessage {
     "createdAt": string,
     "updatedAt": string,
 }
+export interface Comment {
+    _id: string;
+    content: string;
+    user: {
+        _id: string;
+        full_name: string;
+        username: string;
+        profile_picture: string;
+    };
+    createdAt: string;
+}
+
+export interface Post {
+    _id: string;
+    content: string;
+    image_urls: string[];
+    user: User;
+    post_type: 'text' | 'text_with_image' | 'image' | 'video';
+    likes_count: string[];
+    comments?: Comment[];
+    shares_count?: number;
+    createdAt: string;
+    updatedAt: string;
+}
+
+// export interface Post {
+//   _id: string;
+//   user: User;
+//   content: string;
+//   likes_count: string[];
+//   createdAt: string;
+//   updatedAt: string;
+// }
 
 // Assets export
 export const assets = {

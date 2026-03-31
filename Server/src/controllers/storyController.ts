@@ -1,4 +1,5 @@
 import type { Request, Response } from 'express';
+import { getAuth } from '../middlewares/auth.js';
 import fs from 'fs';
 import { imageKit } from '../config/imageKit.js';
 import Story from '../model/Story.js';
@@ -8,16 +9,16 @@ import { inngest } from '../inngest/index.js';
 //Add Story
 export const addUserStory = async (req: Request, res: Response) => {
     try {
-        const userId = req.user?.id;
-        const {constent, media_type, background_color }= req.body;
+        const { userId } = getAuth(req);
+        const { content, media_type, background_color }= req.body;
         const media = req.file;
         let media_url= "";
-        if(!media){
+
+        if ((media_type === 'image' || media_type === 'video') && !media) {
             return res.status(400).json({ success: false, message: "Media file is required" });
         }
-        
 
-        if(media_type === 'image' && media_type == 'video'){
+        if (media && (media_type === 'image' || media_type === 'video')) {
             const fileBuffer = fs.readFileSync(media.path);
             const response = await imageKit.upload({
                 file: fileBuffer,
@@ -26,10 +27,14 @@ export const addUserStory = async (req: Request, res: Response) => {
             media_url= response.url;
         }
 
+        if (media_type === 'text' && !content) {
+            return res.status(400).json({ success: false, message: "Story text is required" });
+        }
+
         //create story
         const story = await Story.create({
             user: userId,
-            constent,
+            content: content || "",
             media_type,
             media_url,
             background_color,
@@ -37,7 +42,7 @@ export const addUserStory = async (req: Request, res: Response) => {
 
         //schedule story deletion after 24 hours
         await inngest.send({
-            name: 'app/story._id',
+            name: 'app/story-created',
             data:{storyId: story._id},
         })
 
@@ -55,7 +60,7 @@ export const addUserStory = async (req: Request, res: Response) => {
 //Get User Stories
 export const getStories = async (req: Request, res: Response) => {
     try {
-        const userId = req.user?.id;
+        const { userId } = getAuth(req);
         const user = await User.findById(userId);
         if(!user){
             return res.status(404).json({success:false, message:"User not found"});

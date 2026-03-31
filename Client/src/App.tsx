@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { Routes, Route } from 'react-router-dom'
 import Login from './pages/Login'
 import Feed from './pages/Feed'
@@ -9,18 +10,30 @@ import Profile from './pages/Profile'
 import Discover from './pages/Discover'
 import { useAuth } from './context/AuthContext'
 import Layout from './pages/Layout'
+import { useDispatch } from 'react-redux'
+import { clearUser, fetchUser } from './features/user/userSlice'
+import type { AppDispatch } from './app/store'
+import { clearConnections, fetchConnections } from './features/connections/connectionsSlice'
 import { Toaster } from 'react-hot-toast'
 import Loading from './components/Loading'
+import { resetMessages } from './features/messages/messagesSlice'
 
 const App = () => {
   const { user, loading } = useAuth()
-  // const {getToken} = useAuth()
 
-  // useInsertionEffect(() => {
-  //   const fetchData= async ()= >{
-  //     if(user)=
-  //   }
-  // })
+  const dispatch = useDispatch<AppDispatch>();
+
+  useEffect(() => {
+    if (user) {
+      dispatch(fetchUser());
+      dispatch(fetchConnections());
+    } else {
+      // Prevent stale state when switching accounts or logging out.
+      dispatch(clearUser());
+      dispatch(clearConnections());
+      dispatch(resetMessages());
+    }
+  }, [user, dispatch]);
 
   if (loading) {
     return <Loading />

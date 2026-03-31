@@ -1,17 +1,49 @@
 import { useState } from 'react'
-import { dummyUserData } from '../assets/assets'
 import { Image, X } from 'lucide-react'
 import toast from 'react-hot-toast'
+import { useSelector } from 'react-redux'
+import type { RootState } from '../app/store'
+import api from '../api/axios'
+import { useNavigate } from 'react-router-dom'
+
 
 const CreatePost = () => {
 
+  const navigate= useNavigate();
   const [content , setContent ] = useState('')
   const [images, setImages ] = useState<File[]>([])
   const [loading , setLoading ] = useState<boolean>(false)
   
-  const user= dummyUserData
+  const user = useSelector((state: RootState) => state.user.value);
 
   const handleSubmit = async () => {
+    if(!images.length && !content){
+      return toast.error('Please add atleast one image or text')
+    }
+    setLoading(true)
+
+    const postType= images.length && content ? 'text_with_image' : images.length? 'image':'text'
+
+    try{
+      const formData = new FormData();
+      formData.append('content', content)
+      formData.append('post_type', postType)
+      images.map((image) =>{
+        formData.append('images', image)
+      })
+
+      const { data } = await api.post('/api/post/add', formData)
+
+      if(data.success){
+        navigate('/')
+      }else{
+        console.log(data.message)
+        throw new Error(data.message)
+      }
+    }catch(error:unknown){
+        console.log((error as Error).message)
+        throw new Error((error as Error).message)
+    }
 
   }
 
@@ -28,10 +60,10 @@ const CreatePost = () => {
         <div className='max-w-xl bg-white p-4 sm:p-8 sm:pb-3 rounded-xl shadow-md space-y-4'>
           {/* Header */}
           <div className='flex items-center gap-3'>
-            <img src={user.profile_picture} alt="profile" className='w-12 h-12 rounded-full shadow' />
+            <img src={user?.profile_picture} alt="profile" className='w-12 h-12 rounded-full shadow' />
             <div>
-              <h2 className='font-semibold'>{user.full_name}</h2>
-              <p className='text-sm text-gray-500'>@{user.username}</p>
+              <h2 className='font-semibold'>{user?.full_name}</h2>
+              <p className='text-sm text-gray-500'>@{user?.username}</p>
             </div>
           </div>
 

@@ -1,71 +1,282 @@
-import { BadgeCheck, Heart, MessageCircle, Share2 } from "lucide-react"
+import {  Heart, MessageCircle, Share2 } from "lucide-react"
 import moment from "moment"
-import { dummyUserData } from "../assets/assets";
 import { useState } from "react";
-import { type Post } from "../assets/assets"; 
+import { type Post, type Comment } from "../assets/assets"; 
 import { useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
+import type { RootState } from "../app/store";
+import api from "../api/axios";
+import toast from "react-hot-toast";
+
 interface PostCardProps {
   post: Post;
 }
 
 const PostCard = ({ post }: PostCardProps) => {
-
-   const postWithHashTags = post.content.replace(/(#\w+)/g, '<span class="text-blue-500">$1</span>');
-   const [likes, setLikes] = useState(post.likes_count ||0);
-   const currentUser = dummyUserData;
-
-   const handleLike = async () => {
-
-   }
-
    const navigate = useNavigate()
+   const safeUser = post.user || {
+    _id: "",
+    full_name: "Unknown user",
+    username: "unknown",
+    profile_picture: "/default-avatar.png"
+   };
+   const safeContent = post.content || "";
+   const safeImageUrls = Array.isArray(post.image_urls)
+    ? post.image_urls
+    : (post.image_urls ? [post.image_urls as unknown as string] : []);
+   const postWithHashTags = safeContent.replace(/(#\w+)/g, '<span class="text-blue-500">$1</span>');
+   const [likes, setLikes] = useState<string[]>(post.likes_count || []);
+   const [comments, setComments] = useState<Comment[]>(post.comments || []);
+   const [shares, setShares] = useState<number>(post.shares_count || 0);
+   const [showComments, setShowComments] = useState(false);
+   const [newComment, setNewComment] = useState("");
+   const [isSubmitting, setIsSubmitting] = useState(false);
+   const [isLoadingComments, setIsLoadingComments] = useState(false);
+   const currentUser = useSelector((state: RootState) => state.user.value);
 
-  return (
-    <div className="bg-white rounded-xl shadow p-4 space-y-4 w-full max-w-2xl">
-        {/* User info */}
-        <div onClick={() => navigate('/profile/' + post.user._id)} className="inline-flex items-center gap-3 cursor-pointer">
-            <img src={post.user.profile_picture} alt="User" className="w-10 h-10 rounded-full shadow" />
-            <div> 
-                <div>
-                    <span>{post.user.full_name}</span>
-                    <BadgeCheck className='text-blue-500 w-4 h-4'/>
-                </div>
-                <div className='text-gary-500 text-sm' >@{post.user.username}.{moment(post.createdAt).fromNow()}</div>
-            </div>
-        </div>
-        {/* Content */}
-        {post.content && <div className='text-gray-800 text-sm whitespace-pre-line'
-        dangerouslySetInnerHTML={{__html:postWithHashTags}}/>}
+   // Load comments when clicking on comments button
+   const loadComments = async () => {
+       if (comments.length > 0) {
+           setShowComments(!showComments);
+           return;
+       }
+       
+       setIsLoadingComments(true);
+       try {
+           const { data } = await api.get(`/api/post/comments/${post._id}`);
+           if (data.success) {
+               setComments(data.comments);
+               setShowComments(true);
+           }
+       } catch (error) {
+           console.error('Error fetching comments:', error);
+           toast.error('Failed to load comments');
+       } finally {
+           setIsLoadingComments(false);
+       }
+   };
 
-        {/* Images */}
-        <div className='grid grid-cols-2 gap-2'>
-          {
-            post.image_urls.map((img, index:number)=> (
-              <img src={img} key={index} alt='' className={`w-full h-48 object-cover rounded-lg ${post.image_urls.length === 1 && 'col-span-2 h-auto'}` }/>
-            ))
-          }
-          </div>
+   // Handle like
+   const handleLike = async () => {
+       if (!currentUser?._id) {
+           toast.error('Please log in to like posts');
+           return;
+       }
+       try {
+           const { data } = await api.post('/api/post/like', { postId: post._id });
+           if (data.success) {
+               setLikes(prev => {
+                   if (prev.includes(currentUser._id)) {
+                       return prev.filter(id => id !== currentUser._id);
+                   } else {
+                       return [...prev, currentUser._id];
+                   }
+               });
+           } else {
+               toast.error(data.message);
+           }
+       } catch (error: unknown) {
+           toast.error((error as Error).message);
+       }
+   };
 
-          {/* Actions  */}
-          <div className="flex items-center text-gray-600 text-sm gap-4 pt-2 border-t border-gray-300">
-            <div className="flex items-center gap-1 cursor-pointer">
-              <Heart  className={`w-6 h-4 cursor-pointer${likes.includes(currentUser._id) && 'text-red-500 '}`}
-              onClick={handleLike}/>
-              <span>{likes.length}</span>
-            </div>
-            <div className="flex items-center gap-1 cursor-pointer">
-              <MessageCircle className="w-6 h-4 cursor-pointer" />
-              <span >{12}</span>
-            </div>
-            <div className="flex items-center gap-1 cursor-pointer">
-              <Share2 className="w-6 h-4 cursor-pointer" />
-              <span >{7}</span>
-            </div>
-          </div>
+   // Handle comment
+   const handleComment = async () => {
+       if (!currentUser?._id) {
+           toast.error('Please log in to comment');
+           return;
+       }
+       if (!newComment.trim()) {
+           toast.error('Please enter a comment');
+           return;
+       }
+       
+       setIsSubmitting(true);
+       try {
+           const { data } = await api.post('/api/post/comment', {
+               postId: post._id,
+               content: newComment.trim()
+           });
+           
+           if (data.success) {
+               // Add new comment to the list
+               setComments(prev => [data.comment, ...prev]);
+               setNewComment("");
+               toast.success('Comment added!');
+           } else {
+               toast.error(data.message);
+           }
+       } catch (error: unknown) {
+           toast.error((error as Error).message);
+       } finally {
+           setIsSubmitting(false);
+       }
+   };
 
+   // Handle share
+   const handleShare = async () => {
+       if (!currentUser?._id) {
+           toast.error('Please log in to share posts');
+           return;
+       }
+       
+       try {
+           const { data } = await api.post('/api/post/share', { postId: post._id });
+           if (data.success) {
+               setShares(prev => prev + 1);
+               toast.success('Post shared!');
+           } else {
+               toast.error(data.message);
+           }
+       } catch (error: unknown) {
+           toast.error((error as Error).message);
+       }
+   };
 
-    </div>
-  )
-}
+   return (
+       <div className="bg-white rounded-xl shadow p-4 space-y-4 w-full max-w-2xl">
+           {/* User info */}
+           <div onClick={() => safeUser._id && navigate('/profile/' + safeUser._id)} className="cursor-pointer">
+               <div className="flex items-center justify-between">
+                   <div className="flex items-center gap-3">
+                       <img 
+                           src={safeUser.profile_picture || '/default-avatar.png'} 
+                           alt="User" 
+                           className="w-10 h-10 rounded-full shadow object-cover" 
+                       />
+                       <div>
+                           <div className="flex items-center gap-1">
+                               <span className="font-semibold text-gray-900">{safeUser.full_name}</span>
+                           </div>
+                           <div className='text-gray-500 text-sm'>
+                               @{safeUser.username}
+                           </div>
+                       </div>
+                   </div>
+                   <div className='text-gray-400 text-xs'>
+                       {moment(post.createdAt).fromNow()}
+                   </div>
+               </div>
+           </div>
+           
+           {/* Content */}
+           {safeContent && (
+               <div 
+                   className='text-gray-800 text-sm whitespace-pre-line'
+                   dangerouslySetInnerHTML={{__html: postWithHashTags}}
+               />
+           )}
 
-export default PostCard
+           {/* Images */}
+           {safeImageUrls.length > 0 && (
+               <div className={`grid gap-2 ${safeImageUrls.length === 1 ? 'grid-cols-1' : 'grid-cols-2'}`}>
+                   {safeImageUrls.map((img, index) => (
+                       <img 
+                           src={img} 
+                           key={index} 
+                           alt='' 
+                           className={`w-full ${safeImageUrls.length === 1 ? 'h-auto' : 'h-48'} object-cover rounded-lg`}
+                       />
+                   ))}
+               </div>
+           )}
+
+           {/* Actions */}
+           <div className="flex items-center text-gray-600 text-sm gap-4 pt-2 border-t border-gray-300">
+               <button 
+                   className="flex items-center gap-1 hover:text-red-500 transition-colors"
+                   onClick={handleLike}
+               >
+                   <Heart 
+                       className={`w-5 h-5 ${currentUser?._id && likes.includes(currentUser._id) ? 'fill-red-500 text-red-500' : ''}`} 
+                   />
+                   <span>{likes.length}</span>
+               </button>
+               
+               <button 
+                   className="flex items-center gap-1 hover:text-blue-500 transition-colors"
+                   onClick={loadComments}
+                   disabled={isLoadingComments}
+               >
+                   <MessageCircle className="w-5 h-5" />
+                   <span>{comments.length}</span>
+               </button>
+               
+               <button 
+                   className="flex items-center gap-1 hover:text-green-500 transition-colors"
+                   onClick={handleShare}
+               >
+                   <Share2 className="w-5 h-5" />
+                   <span>{shares}</span>
+               </button>
+           </div>
+
+           {/* Comments Section */}
+           {showComments && (
+               <div className="border-t border-gray-200 pt-4 space-y-4">
+                   {/* Add Comment Input */}
+                   <div className="flex gap-2">
+                       <img 
+                           src={currentUser?.profile_picture || '/default-avatar.png'} 
+                           alt="Your avatar" 
+                           className="w-8 h-8 rounded-full object-cover"
+                       />
+                       <div className="flex-1 flex gap-2">
+                           <input
+                               type="text"
+                               value={newComment}
+                               onChange={(e) => setNewComment(e.target.value)}
+                               placeholder="Write a comment..."
+                               className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                               onKeyPress={(e) => e.key === 'Enter' && handleComment()}
+                           />
+                           <button
+                               onClick={handleComment}
+                               disabled={isSubmitting}
+                               className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:opacity-50"
+                           >
+                               {isSubmitting ? 'Posting...' : 'Post'}
+                           </button>
+                       </div>
+                   </div>
+
+                   {/* Comments List */}
+                   <div className="space-y-3 max-h-96 overflow-y-auto">
+                       {comments.length === 0 ? (
+                           <p className="text-gray-500 text-center py-4">No comments yet. Be the first to comment!</p>
+                       ) : (
+                           comments.map((comment) => (
+                               <div key={comment._id} className="flex gap-2">
+                                   <img 
+                                       src={comment.user?.profile_picture || '/default-avatar.png'} 
+                                       alt={comment.user?.full_name} 
+                                       className="w-8 h-8 rounded-full object-cover cursor-pointer"
+                                       onClick={() => navigate('/profile/' + comment.user._id)}
+                                   />
+                                   <div className="flex-1">
+                                       <div className="bg-gray-50 rounded-lg p-2">
+                                           <div className="flex items-center gap-2">
+                                               <span 
+                                                   className="font-semibold text-sm cursor-pointer hover:underline"
+                                                   onClick={() => navigate('/profile/' + comment.user._id)}
+                                               >
+                                                   {comment.user?.full_name}
+                                               </span>
+                                               <span className="text-xs text-gray-500">
+                                                   {moment(comment.createdAt).fromNow()}
+                                               </span>
+                                           </div>
+                                           <p className="text-gray-700 text-sm mt-1">{comment.content}</p>
+                                       </div>
+                                   </div>
+                               </div>
+                           ))
+                       )}
+                   </div>
+               </div>
+           )}
+       </div>
+   );
+};
+
+export default PostCard;

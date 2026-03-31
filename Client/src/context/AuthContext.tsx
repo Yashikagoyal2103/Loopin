@@ -28,7 +28,7 @@ interface User {
     username: string;
     full_name: string;
     profile_picture: string;
-    cover_picture: string;
+    cover_photo: string;
     bio: string;
     location: string;
     authProvider: 'local' | 'google' | 'facebook';
@@ -60,7 +60,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             if (response.data.success) {
                 setUser(response.data.user);
             }
-        } catch (error) {
+        } catch (error:unknown) {
+            console.error('Auth check error:', authErrorMessage(error, 'Unknown error during auth check'));
             setUser(null);
         } finally {
             setLoading(false);

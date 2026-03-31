@@ -1,20 +1,31 @@
-import { dummyStoriesData } from "../assets/assets"
 import { useEffect, useState } from 'react';
 import { type Story } from '../assets/assets'; 
 import { Plus } from "lucide-react";
 import moment from "moment";
 import StoryModel from './StoryModel';
 import StoryViewer from './StoryViewer';
+import api from '../api/axios';
+import toast from 'react-hot-toast';
 
 
 const StoriesBar = () => {
-
     const [stories, setStories] = useState<Story[]>([])
     const [showModel, setShowModel] = useState<boolean>(false)
     const [viewStory, setViewStory] = useState<Story | null>(null)
 
     const fetchStories = async () => {
-            setStories(dummyStoriesData)
+        try{
+            const { data } = await api.get('/api/story/get')
+
+            if(data.success){
+                setStories(data.stories)
+            }else{
+                toast(data.message)
+            }
+        }catch (error :unknown){
+            toast.error((error as Error).message)
+        }           
+        
     }
 
     useEffect(() => {
@@ -62,8 +73,7 @@ const StoriesBar = () => {
             }
         </div>
         {/*Add Story Model */}
-        {showModel && <StoryModel setShowModel={setShowModel} />}
-        {/* fetchStories={fetchStories} */}
+        {showModel && <StoryModel setShowModel={setShowModel} fetchStories={fetchStories} />}
         {/* Story Viewer */}
         {viewStory !== null && <StoryViewer viewStory={viewStory} setViewStory={setViewStory}/>}
        

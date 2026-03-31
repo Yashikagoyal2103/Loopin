@@ -8,6 +8,8 @@ const userSchema = new mongoose.Schema({
     password: { type: String, select: false }, // Don't return password by default
     bio: { type: String, default: "Hey there! I am using Loopin." },
     profile_picture: { type: String, default: "" },
+    cover_photo: { type: String, default: "" },
+    // Backward compatibility for legacy records/clients.
     cover_picture: { type: String, default: "" },
     location: { type: String, default: "" },
     followers: { type: [String], ref: "User", default: [] },

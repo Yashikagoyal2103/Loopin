@@ -1,29 +1,45 @@
 import { useState , useEffect } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import { dummyPostsData, dummyUserData ,type Post  , type User} from '../assets/assets'
+import {type Post  , type User} from '../assets/assets'
 import Loading from '../components/Loading'
 import UserProfileInfo from '../components/UserProfileInfo'
 import PostCard from '../components/PostCard'
 import moment from 'moment'
 import ProfileModel from '../components/ProfileModel'
-
+import api from '../api/axios'
+import toast from 'react-hot-toast'
+import { useSelector } from 'react-redux'
+import type { RootState } from '../app/store'
 
 const Profile = () => {
 
+  const currentUser = useSelector((state: RootState) => state.user.value);
+  
   const {profileId} = useParams()
   const [user, setUser] = useState<User | null>(null)
   const [posts, setPosts] =useState<Post[]>([])
   const [activeTab, setActiveTab ] = useState('posts')
   const [showEdit, setShowEdit ]=  useState<boolean>(false)
 
-  const fetchUser = async () => {
-    setUser(dummyUserData)
-    setPosts(dummyPostsData)
+  const fetchUser = async (profileId:string) => {
+    try{
+      const { data } = await api.post(`/api/user/profiles`, {profileId})
+      if(data.success){
+        setUser(data.profile)
+        setPosts(data.posts)
+      }
+    }catch(error:unknown){
+      toast.error((error as Error).message)
+    }
   }
 
   useEffect(() => {
-    fetchUser()
-  }, [])
+    if(profileId){
+      fetchUser(profileId)
+    }else if (currentUser?._id) {
+    fetchUser(currentUser._id);
+  }
+  }, [profileId, currentUser])
 
   return user? (
     <div className='relative h-full overflow-y-scroll bg-gray-50 p-6'>

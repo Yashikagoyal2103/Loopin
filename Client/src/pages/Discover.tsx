@@ -1,9 +1,13 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { type User } from '../assets/assets'
-import { dummyConnectionsData } from '../assets/assets'
 import { Search } from 'lucide-react'
 import UserCard from '../components/UserCard'
 import Loading from '../components/Loading'
+import api from '../api/axios'
+import toast from 'react-hot-toast'
+import { useDispatch } from 'react-redux'
+import { fetchUser } from '../features/user/userSlice'
+import type { AppDispatch } from '../app/store'
 
 
 const Discover = () => {
@@ -12,16 +16,32 @@ const Discover = () => {
   const [users, setUsers] = useState<User[]>([])
   const [loading, setLoading] = useState<boolean>(false)
 
+  const dispatch = useDispatch<AppDispatch>();
+
   const handleSearch = async (e: React.KeyboardEvent<HTMLInputElement>) => {
     if(e.key === 'Enter'){
-      setUsers([])
+      try{
+        setUsers([])
       setLoading(true)
-      setTimeout(() => {
-        setUsers(dummyConnectionsData)
-        setLoading(false)
-      },1000)
+      const { data } = await api.post('/api/user/discover', {input})
+
+      if(data.success){
+          setUsers(data.users)
+      }else{
+        toast.error(data.message)
+      }
+      setLoading(false)
+      setInput('')
+      }catch( error: unknown){
+        toast.error((error as Error).message)
+      }
+      setLoading(false)
     }
   }
+
+  useEffect(() => {
+      dispatch(fetchUser())
+    },[dispatch])
 
 
   return (
