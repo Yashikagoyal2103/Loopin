@@ -2,7 +2,7 @@ import mongoose from 'mongoose';
 
 const PostSchema = new mongoose.Schema({
     user: {
-        type: String,
+        type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
         required: true
     },
@@ -13,10 +13,12 @@ const PostSchema = new mongoose.Schema({
     image_urls: [{
         type: String
     }],
-    likes_count: [{ type: String, ref: 'User' }],
+    likes_count: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
+    // Backward compatibility for older seeded data.
+    likes: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
     comments: [{
         user: {
-            type: String,
+            type: mongoose.Schema.Types.ObjectId,
             ref: 'User'
         },
         content: {

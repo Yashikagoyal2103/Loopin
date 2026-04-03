@@ -18,6 +18,7 @@ const Profile = () => {
   const {profileId} = useParams()
   const [user, setUser] = useState<User | null>(null)
   const [posts, setPosts] =useState<Post[]>([])
+  const [likedPosts, setLikedPosts] = useState<Post[]>([])
   const [activeTab, setActiveTab ] = useState('posts')
   const [showEdit, setShowEdit ]=  useState<boolean>(false)
 
@@ -33,11 +34,23 @@ const Profile = () => {
     }
   }
 
+  const fetchLikedPosts = async () => {
+    try {
+      const { data } = await api.get('/api/post/liked');
+      if (data.success) {
+        setLikedPosts(data.posts || []);
+      }
+    } catch (error: unknown) {
+      toast.error((error as Error).message);
+    }
+  };
+
   useEffect(() => {
     if(profileId){
       fetchUser(profileId)
     }else if (currentUser?._id) {
     fetchUser(currentUser._id);
+    fetchLikedPosts();
   }
   }, [profileId, currentUser])
 
@@ -74,14 +87,21 @@ const Profile = () => {
               </button>
             ) )}
           </div>
-          {/* Posts */}
+          {/* Posts
           {activeTab == 'posts' && (
             <div>{posts.map((post) => <PostCard key={post._id} post={post}/>)}</div>
+          )} */}
+
+          {/* Posts */}
+          {activeTab == 'posts' && (
+            <div className="space-y-4 mt-6">
+              {posts.map((post) => <PostCard key={post._id} post={post}/>)}
+            </div>
           )}
 
           {/* Media */}
           {activeTab === 'media' &&(
-          <div className='flex flex-wrap mt-6 max-w-6xl'>
+          <div className='flex flex-wrap gap-4 mt-6 max-w-6xl'>
             {posts.filter((post) => post.image_urls.length > 0).map((post) =>(
               <>
               {post.image_urls.map((image, index) => (
@@ -93,6 +113,17 @@ const Profile = () => {
               </>
               ))}
           </div>
+          )}
+
+          {/* Likes */}
+          {activeTab === 'likes' && (
+            <div className='space-y-4 mt-6'>
+              {likedPosts.length === 0 ? (
+                <p className='text-gray-500 text-center py-8'>No liked posts yet.</p>
+              ) : (
+                likedPosts.map((post) => <PostCard key={post._id} post={post} />)
+              )}
+            </div>
           )}
         </div>      
       </div>

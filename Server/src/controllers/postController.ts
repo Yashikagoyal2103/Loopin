@@ -1,6 +1,7 @@
 import type { Request, Response } from 'express';
 import { getAuth } from '../middlewares/auth.js';
 import fs from 'fs';
+import mongoose from 'mongoose';
 import { imageKit } from '../config/imageKit.js';
 import Post from '../model/Post.js';
 import User from '../model/User.js';
@@ -107,15 +108,29 @@ export const getFeedPosts = async (req: Request, res: Response) => {
             return res.status(404).json({ success: false, message: "User not found" });
         }
 
-        const networkIds = [userId, ...(user.connections || []), ...(user.following || [])];
-        const query = networkIds.length > 1 ? { user: { $in: networkIds } } : {};
+        const networkIds = [
+            user._id.toString(),
+            ...(user.connections || []).map((id) => id.toString()),
+            ...(user.following || []).map((id) => id.toString())
+        ];
+        const uniqueNetworkIds = [...new Set(networkIds)];
+        const networkObjectIds = uniqueNetworkIds
+            .filter((id) => mongoose.Types.ObjectId.isValid(id))
+            .map((id) => new mongoose.Types.ObjectId(id));
+        const query = networkObjectIds.length > 1 ? { user: { $in: networkObjectIds } } : {};
 
         const posts = await Post.find(query)
             .populate('user', 'full_name username profile_picture')
             .populate('comments.user', 'full_name username profile_picture')
             .sort({ createdAt: -1 });
 
-        res.json({ success: true, posts });
+        const normalizedPosts = posts.map((post: any) => {
+            const p = post.toObject ? post.toObject() : post;
+            p.likes_count = p.likes_count?.length ? p.likes_count : (p.likes || []);
+            return p;
+        });
+
+        res.json({ success: true, posts: normalizedPosts });
 
     } catch (error: unknown) {
         console.error("Error getting posts:", error);
@@ -142,20 +157,22 @@ export const likePost = async (req: Request, res: Response) => {
 
          // Use MongoDB update operators instead of array methods
         // const alreadyLiked = post.likes_count?.includes(userId);
-        const alreadyLiked = post.likes_count?.some(id => id.toString() === userId);
+        const activeLikes = (post.likes_count && post.likes_count.length > 0)
+            ? post.likes_count
+            : (post as any).likes || [];
+        const alreadyLiked = activeLikes.some((id: any) => id.toString() === userId);
+        const userObjectId = new mongoose.Types.ObjectId(userId);
 
         if (alreadyLiked) {
-            // Unlike - remove user from likes array
             await Post.findByIdAndUpdate(
                 postId,
-                { $pull: { likes_count: userId } }
+                { $pull: { likes_count: userObjectId, likes: userObjectId } }
             );
             return res.json({ success: true, message: "Post unliked" });
         } else {
-            // Like - add user to likes array
             await Post.findByIdAndUpdate(
                 postId,
-                { $addToSet: { likes_count: userId } }
+                { $addToSet: { likes_count: userObjectId, likes: userObjectId } }
             );
             return res.json({ success: true, message: "Post liked" });
         }
@@ -273,5 +290,34 @@ export const sharePost = async (req: Request, res: Response) => {
     } catch (error) {
         console.error("Error sharing post:", error);
         res.status(500).json({ success: false, message: (error as Error ).message });
+    }
+};
+
+// Get posts liked by the current user
+export const getLikedPosts = async (req: Request, res: Response) => {
+    try {
+        const { userId } = getAuth(req);
+        const userObjectId = new mongoose.Types.ObjectId(userId);
+
+        const posts = await Post.find({
+            $or: [
+                { likes_count: userObjectId },
+                { likes: userObjectId }
+            ]
+        })
+            .populate('user', 'full_name username profile_picture')
+            .populate('comments.user', 'full_name username profile_picture')
+            .sort({ createdAt: -1 });
+
+        const normalizedPosts = posts.map((post: any) => {
+            const p = post.toObject ? post.toObject() : post;
+            p.likes_count = p.likes_count?.length ? p.likes_count : (p.likes || []);
+            return p;
+        });
+
+        res.json({ success: true, posts: normalizedPosts });
+    } catch (error) {
+        console.error("Error fetching liked posts:", error);
+        res.status(500).json({ success: false, message: (error as Error).message });
     }
 };

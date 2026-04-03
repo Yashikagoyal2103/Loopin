@@ -7,12 +7,29 @@ import api from '../api/axios'
 import { useNavigate } from 'react-router-dom'
 import { fetchUser } from '../features/user/userSlice'
 import { fetchConnections } from '../features/connections/connectionsSlice'
+import { useEffect, useState } from 'react'
 
 const UserCard = ({ user }: { user: User }) => {
 
     const currentUser = useSelector((state: RootState) => state.user.value);
     const navigate = useNavigate()
     const dispatch = useDispatch<AppDispatch>();
+    const [isFollowing, setIsFollowing] = useState(false);
+    const [isConnected, setIsConnected] = useState(false);
+
+    const hasId = (arr: Array<string | { toString(): string }> = [], id?: string) =>
+        !!id && arr.some((v) => v?.toString() === id);
+
+    const safeIdList = (value: unknown): Array<string | { toString(): string }> =>
+        Array.isArray(value) ? (value as Array<string | { toString(): string }>) : [];
+
+    useEffect(() => {
+        const following = safeIdList(currentUser?.following);
+        const connections = safeIdList(currentUser?.connections);
+
+        setIsFollowing(hasId(following, user._id));
+        setIsConnected(hasId(connections, user._id));
+    }, [currentUser, user._id]);
 
 
     const handleFollow = async () => {
@@ -20,6 +37,7 @@ const UserCard = ({ user }: { user: User }) => {
             const { data } = await api.post(`/api/user/follow/${user._id}`)
         if(data.success){
             toast.success(data.message)
+            setIsFollowing(true);
             dispatch(fetchUser())
             dispatch(fetchConnections())
         }else{
@@ -31,13 +49,15 @@ const UserCard = ({ user }: { user: User }) => {
     }
 
     const handleConnectionRequest = async () => {   
-        if(currentUser?.connections?.includes(user._id)){
+        if (isConnected) {
             return navigate('/messages/' + user._id)
         }
         try{
             const { data } = await api.post('/api/user/connect',{id: user._id})
         if(data.success){
             toast.success(data.message)
+            setIsConnected(true);
+            dispatch(fetchConnections());
         }else{
             toast.error(data.message)
         }
@@ -65,15 +85,15 @@ const UserCard = ({ user }: { user: User }) => {
 
         <div className='flex mt-4 gap-2'>
             {/* Follow Button */}
-            <button onClick={handleFollow} disabled={currentUser?.following?.includes(user._id)} className='w-full py-2 rounded-md flex justify-center items-center gap-2 bg-gradient-to-r
+            <button onClick={handleFollow} disabled={isFollowing} className='w-full py-2 rounded-md flex justify-center items-center gap-2 bg-gradient-to-r
             from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 active-scale-95 transition text-white cursor-pointer'>
-                <UserPlus />{currentUser?.following?.includes(user._id) ? 'Following' : 'Follow' }
+                <UserPlus />{isFollowing ? 'Following' : 'Follow' }
             </button>
 
             {/* Connection request button / message button */}
             <button onClick={handleConnectionRequest} className='flex items-center justify-center w-16 border text-slate-500 group rounded-md cursor-pointer active:scalle-95 transition'>
                 {
-                    currentUser?.connections?.includes(user._id) ? 
+                    isConnected ? 
                     <MessageCircle className="w-5 h-5 group-hover:scale-105 transition" />
                     :
                     <Plus className='w-5 h-5 group-hover:scale-105 transition'/>

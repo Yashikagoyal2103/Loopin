@@ -43,7 +43,8 @@ const Login = () => {
                     <img
                         src={assets.logo}
                         alt="Loopin"
-                        className="h-9 w-auto max-w-[180px] object-contain object-left opacity-[0.92] dark:opacity-[0.9] dark:brightness-110"
+                        className="h-14 sm:h-18 md:h-18 lg:h-18 w-auto object-contain object-left opacity-90 dark:opacity-[0.88] dark:brightness-110 dark:contrast-95"
+                        // className="h-9 w-auto max-w-[180px] object-contain object-left opacity-[0.92] dark:opacity-[0.9] dark:brightness-110"
                     />
                 </div>
                 <div>

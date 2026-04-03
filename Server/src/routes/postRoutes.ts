@@ -6,7 +6,8 @@ import {
     likePost,
     addComment,
     getComments,
-    sharePost
+    sharePost,
+    getLikedPosts
 } from '../controllers/postController.js';
 import { protect } from '../middlewares/auth.js';
 
@@ -21,5 +22,6 @@ postRouter.post('/like', protect, likePost);
 postRouter.post('/comment', protect, addComment);
 postRouter.get('/comments/:postId', protect, getComments);
 postRouter.post('/share', protect, sharePost);
+postRouter.get('/liked', protect, getLikedPosts);
 
 export default postRouter;

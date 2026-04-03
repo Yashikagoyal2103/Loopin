@@ -1,3 +1,510 @@
+// import mongoose from 'mongoose';
+// import bcrypt from 'bcrypt';
+// import dotenv from 'dotenv';
+
+// dotenv.config();
+
+// // ==================== INTERFACES ====================
+
+// interface IUser {
+//     email: string;
+//     password: string;
+//     full_name: string;
+//     username: string;
+//     bio: string;
+//     location: string;
+//     profile_picture: string;
+//     cover_picture: string;
+//     emailVerified: boolean;
+//     authProvider: string;
+//     vibe?: string;
+//     followers: mongoose.Types.ObjectId[];
+//     following: mongoose.Types.ObjectId[];
+//     connections: mongoose.Types.ObjectId[];
+// }
+
+// interface IPost {
+//     user: mongoose.Types.ObjectId;
+//     content: string;
+//     post_type: string;
+//     image_urls: string[];
+//     likes: mongoose.Types.ObjectId[];
+//     comments: {
+//         user: mongoose.Types.ObjectId;
+//         content: string;
+//         createdAt: Date;
+//     }[];
+//     createdAt: Date;
+//     updatedAt: Date;
+// }
+
+// interface IComment {
+//     user: mongoose.Types.ObjectId;
+//     content: string;
+//     createdAt: Date;
+// }
+
+// interface UserData {
+//     full_name: string;
+//     username: string;
+//     email: string;
+//     bio: string;
+//     location: string;
+//     profile_picture: string;
+//     cover_picture: string;
+//     vibe: string;
+// }
+
+// interface PostData {
+//     content: string;
+//     post_type: string;
+//     image_urls: string[];
+// }
+
+// interface FollowRelation {
+//     follower: string;
+//     following: string;
+// }
+
+// // ==================== SCHEMAS ====================
+
+// const userSchema = new mongoose.Schema<IUser>({
+//     email: { type: String, required: true },
+//     password: { type: String, required: true },
+//     full_name: { type: String, required: true },
+//     username: { type: String, required: true, unique: true },
+//     bio: { type: String, default: '' },
+//     location: { type: String, default: '' },
+//     profile_picture: { type: String, default: '' },
+//     cover_picture: { type: String, default: '' },
+//     emailVerified: { type: Boolean, default: false },
+//     authProvider: { type: String, default: 'local' },
+//     followers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
+//     following: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
+//     connections: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }]
+// }, { timestamps: true });
+
+// const postSchema = new mongoose.Schema<IPost>({
+//     user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+//     content: { type: String, required: true },
+//     post_type: { type: String, default: 'text' },
+//     image_urls: { type: [String], default: [] },
+//     likes: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
+//     comments: [{
+//         user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+//         content: { type: String, required: true },
+//         createdAt: { type: Date, default: Date.now }
+//     }],
+//     createdAt: { type: Date, default: Date.now },
+//     updatedAt: { type: Date, default: Date.now }
+// });
+
+// // ==================== DATA ====================
+
+// const usersData: UserData[] = [
+//     {
+//         full_name: "Luna Chen",
+//         username: "lunalovegood_vibes",
+//         email: "luna@loopin.com",
+//         bio: "✨ professional overthinker | matcha addict | manifesting my soft girl era 💅\n📍 currently living in my delulu era",
+//         location: "Brooklyn, NY (in my head)",
+//         profile_picture: "https://images.unsplash.com/photo-1517841905240-472988babdf9",
+//         cover_picture: "https://images.unsplash.com/photo-1522071820081-009f0129c71c",
+//         vibe: "Soft Girl Aesthetic"
+//     },
+//     {
+//         full_name: "Alex Martinez",
+//         username: "chaos_theory",
+//         email: "alex@loopin.com",
+//         bio: "🏴‍☠️ professional yapper | sleep is for the weak | will argue about anything \n⚠️ warning: may trauma dump mid-conversation",
+//         location: "Austin, TX (send help)",
+//         profile_picture: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e",
+//         cover_picture: "https://images.unsplash.com/photo-1513151233558-860c5394c75d",
+//         vibe: "Chaos Gremlin"
+//     },
+//     {
+//         full_name: "Zara Williams",
+//         username: "zarathedream",
+//         email: "zara@loopin.com",
+//         bio: "👑 CEO of my own delusions | fashion week reject | ✨ hot girl era activated \n📧 business inquiries: makeitmake@sense.com",
+//         location: "LA (manifesting)",
+//         profile_picture: "https://images.unsplash.com/photo-1534528741775-53994a69daeb",
+//         cover_picture: "https://images.unsplash.com/photo-1483985988353-7c7f6d2a7fc1",
+//         vibe: "The It Girl"
+//     },
+//     {
+//         full_name: "Kai Park",
+//         username: "existentialkai",
+//         email: "kai@loopin.com",
+//         bio: "🌙 3AM thoughts enjoyer | film photography nerd | professional sad boi \n📽️ currently: overanalyzing everything",
+//         location: "Seoul / Portland (depends on my mood)",
+//         profile_picture: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d",
+//         cover_picture: "https://images.unsplash.com/photo-1492691527719-9d1e07e534b4",
+//         vibe: "The Deep Thinker"
+//     },
+//     {
+//         full_name: "Jordan Taylor",
+//         username: "meme_junkie",
+//         email: "jordan@loopin.com",
+//         bio: "📱 professional screen time haver | meme curator | will laugh at my own jokes \n⚠️ humor may be broken, proceed with caution",
+//         location: "my moms basement (temporarily)",
+//         profile_picture: "https://images.unsplash.com/photo-1531427186611-ecfd6d936c79",
+//         cover_picture: "https://images.unsplash.com/photo-1554177255-61502b352de3",
+//         vibe: "The Meme Lord"
+//     },
+//     {
+//         full_name: "Maya Singh",
+//         username: "fit_maya",
+//         email: "maya@loopin.com",
+//         bio: "🏋️‍♀️ gym rat | smoothie bowl enthusiast | ✨ healing my inner child through exercise \n📈 on a journey to be the hottest version of myself",
+//         location: "Toronto (cold girl walks)",
+//         profile_picture: "https://images.unsplash.com/photo-1544005313-94ddf0286df2",
+//         cover_picture: "https://images.unsplash.com/photo-1517836357463-d25dfeac3438",
+//         vibe: "The Fitness Bestie"
+//     },
+//     {
+//         full_name: "Indigo Blue",
+//         username: "indigoblue",
+//         email: "indigo@loopin.com",
+//         bio: "🎨 painting my feelings (literally) | thrift store royalty | ✨ curating my reality \n☕ coffee is my medium",
+//         location: "Portland, OR (very on brand)",
+//         profile_picture: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80",
+//         cover_picture: "https://images.unsplash.com/photo-1460661419201-fd4cecdf8a8b",
+//         vibe: "The Artsy One"
+//     },
+//     {
+//         full_name: "Leo Zhang",
+//         username: "leo_lvl99",
+//         email: "leo@loopin.com",
+//         bio: "🎮 professional button masher | 🥤 gamer fuel connoisseur | ✨ grinding irl \n🕹️ currently: losing at life but winning at games",
+//         location: "basement (gaming setup)",
+//         profile_picture: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d",
+//         cover_picture: "https://images.unsplash.com/photo-1542751371-adc38448a05e",
+//         vibe: "The Gamer/Streamer"
+//     }
+// ];
+
+// const postsData: Record<string, PostData[]> = {
+//     "lunalovegood_vibes": [
+//         {
+//             content: "just cried over a tiktok ad. marketing is getting too good 🥲 #softgirlera",
+//             post_type: "text",
+//             image_urls: []
+//         },
+//         {
+//             content: "my toxic trait is thinking i can fix him 🤡",
+//             post_type: "text",
+//             image_urls: []
+//         },
+//         {
+//             content: "hot girl walk? no. hot girl rot in bed? yes. 💅✨",
+//             post_type: "text_with_image",
+//             image_urls: ["https://images.unsplash.com/photo-1515372039744-b8f02a3ae446"]
+//         },
+//         {
+//             content: "romanticizing my life one overpriced matcha at a time 🍵",
+//             post_type: "text_with_image",
+//             image_urls: ["https://images.unsplash.com/photo-1515823064-d6e0c04616a7"]
+//         }
+//     ],
+//     "chaos_theory": [
+//         {
+//             content: "my attention span is so bad that i— *squirrel* 🐿️",
+//             post_type: "text",
+//             image_urls: []
+//         },
+//         {
+//             content: "just spent 3 hours making a playlist for my imaginary road trip. worth it? absolutely.",
+//             post_type: "text",
+//             image_urls: []
+//         },
+//         {
+//             content: "who decided adulting was a good idea? i want a refund and a manager 😤",
+//             post_type: "text_with_image",
+//             image_urls: ["https://images.unsplash.com/photo-1507525428034-b723cf961d3e"]
+//         }
+//     ],
+//     "zarathedream": [
+//         {
+//             content: "glow up is crazy when you stop caring what people think 💅✨",
+//             post_type: "text",
+//             image_urls: []
+//         },
+//         {
+//             content: "currently accepting applications for: sugar daddy, personal chef, and hype man 📝",
+//             post_type: "text",
+//             image_urls: []
+//         },
+//         {
+//             content: "she believed she could so she did (after crying for 3 hours and eating ice cream)",
+//             post_type: "text_with_image",
+//             image_urls: ["https://images.unsplash.com/photo-1524504384850-549a1dc8b121"]
+//         }
+//     ],
+//     "existentialkai": [
+//         {
+//             content: "sometimes i wonder if my phone listens to me or if i'm just that predictable",
+//             post_type: "text",
+//             image_urls: []
+//         },
+//         {
+//             content: "sunset > sunrise. night owls rise up (at 2pm after sleeping through 5 alarms)",
+//             post_type: "text",
+//             image_urls: []
+//         },
+//         {
+//             content: "romanticizing my life one overpriced coffee at a time ☕",
+//             post_type: "text_with_image",
+//             image_urls: ["https://images.unsplash.com/photo-1442512595331-e89e73853f31"]
+//         }
+//     ],
+//     "meme_junkie": [
+//         {
+//             content: "my sleep schedule is a suggestion, not a commitment 🥱",
+//             post_type: "text",
+//             image_urls: []
+//         },
+//         {
+//             content: "pov: you're explaining your hyperfixation to someone who didn't ask (but i'm gonna tell you anyway)",
+//             post_type: "text",
+//             image_urls: []
+//         },
+//         {
+//             content: "i put the 'pro' in procrastination and the 'crastination' in... wait, let me start over",
+//             post_type: "text_with_image",
+//             image_urls: ["https://images.unsplash.com/photo-1555685812-4b943f1cb0eb"]
+//         }
+//     ],
+//     "fit_maya": [
+//         {
+//             content: "leg day = cry day. but we still show up 💪😤",
+//             post_type: "text",
+//             image_urls: []
+//         },
+//         {
+//             content: "my pre-workout is anxiety and a dream. also caffeine. mostly caffeine.",
+//             post_type: "text",
+//             image_urls: []
+//         },
+//         {
+//             content: "abs are made in the kitchen. and also in therapy. and also in my head.",
+//             post_type: "text_with_image",
+//             image_urls: ["https://images.unsplash.com/photo-1517838277536-f5f99be501cd"]
+//         }
+//     ],
+//     "indigoblue": [
+//         {
+//             content: "my art is just organized chaos. much like my brain. 🎨",
+//             post_type: "text",
+//             image_urls: []
+//         },
+//         {
+//             content: "who needs therapy when you have a paintbrush and existential dread? (kidding, go to therapy)",
+//             post_type: "text",
+//             image_urls: []
+//         },
+//         {
+//             content: "creating my dream life one canvas at a time 🖼️✨",
+//             post_type: "text_with_image",
+//             image_urls: ["https://images.unsplash.com/photo-1460661419201-fd4cecdf8a8b"]
+//         }
+//     ],
+//     "leo_lvl99": [
+//         {
+//             content: "i'm not addicted to gaming. i'm committed to the grind. 💻🎮",
+//             post_type: "text",
+//             image_urls: []
+//         },
+//         {
+//             content: "sleep is for the weak. rank is for the strong. (says while falling asleep at 3am)",
+//             post_type: "text",
+//             image_urls: []
+//         },
+//         {
+//             content: "my k/d ratio in life is not as good as in games. send help and energy drinks.",
+//             post_type: "text_with_image",
+//             image_urls: ["https://images.unsplash.com/photo-1542751371-adc38448a05e"]
+//         }
+//     ]
+// };
+
+// const followRelationships: FollowRelation[] = [
+//     { follower: "chaos_theory", following: "lunalovegood_vibes" },
+//     { follower: "chaos_theory", following: "meme_junkie" },
+//     { follower: "zarathedream", following: "lunalovegood_vibes" },
+//     { follower: "zarathedream", following: "fit_maya" },
+//     { follower: "existentialkai", following: "indigoblue" },
+//     { follower: "existentialkai", following: "lunalovegood_vibes" },
+//     { follower: "meme_junkie", following: "chaos_theory" },
+//     { follower: "meme_junkie", following: "leo_lvl99" },
+//     { follower: "fit_maya", following: "zarathedream" },
+//     { follower: "fit_maya", following: "lunalovegood_vibes" },
+//     { follower: "indigoblue", following: "existentialkai" },
+//     { follower: "indigoblue", following: "lunalovegood_vibes" },
+//     { follower: "leo_lvl99", following: "meme_junkie" },
+//     { follower: "leo_lvl99", following: "chaos_theory" }
+// ];
+
+// const commentTexts: string[] = [
+//     "this is so real 😭",
+//     "felt that 💯",
+//     "literally me fr fr",
+//     "couldn't agree more ✨",
+//     "this post called me out",
+//     "so true bestie",
+//     "my toxic trait is relating to this",
+//     "are you me??",
+//     "sending this to my group chat",
+//     "the way i feel seen rn"
+// ];
+
+// // ==================== MAIN FUNCTION ====================
+
+// async function seedCompleteData(): Promise<void> {
+//     try {
+//         // Connect to database
+//         if (!process.env.DATABASE_URL) {
+//             throw new Error('DATABASE_URL is not defined in environment variables');
+//         }
+        
+//         await mongoose.connect(process.env.DATABASE_URL!, {
+//             dbName: 'LoopinDatabase'
+//         });
+//         console.log('📦 Connected to database' );
+    
+        
+//         // Create models
+//         const User = mongoose.model<IUser>('User', userSchema);
+//         const Post = mongoose.model<IPost>('Post', postSchema);
+        
+//         const defaultPassword: string = await bcrypt.hash('Test123!', 12);
+//         const createdUsers: Record<string, any> = {};
+        
+//         // Create users
+//         console.log('\n👥 Creating users...');
+//         for (const userData of usersData) {
+//             const user = await User.create({
+//                 ...userData,
+//                 password: defaultPassword,
+//                 emailVerified: true,
+//                 authProvider: 'local',
+//                 followers: [],
+//                 following: [],
+//                 connections: []
+//             });
+//             createdUsers[user.username] = user;
+//             console.log(`✅ Created: ${user.username} (${userData.vibe})`);
+//         }
+        
+//         // Create follow relationships
+//         console.log('\n🔗 Creating follow relationships...');
+//         for (const relation of followRelationships) {
+//             const follower: any = createdUsers[relation.follower];
+//             const following: any = createdUsers[relation.following];
+            
+//             if (follower && following) {
+//                 follower.following.push(following._id);
+//                 following.followers.push(follower._id);
+//                 await follower.save();
+//                 await following.save();
+//                 console.log(`✅ ${relation.follower} → following → ${relation.following}`);
+//             }
+//         }
+        
+//         // Create posts
+//         console.log('\n📝 Creating posts...');
+//         for (const [username, posts] of Object.entries(postsData)) {
+//             const user: any = createdUsers[username];
+//             if (user) {
+//                 for (const postData of posts) {
+//                     await Post.create({
+//                         user: user._id,
+//                         content: postData.content,
+//                         post_type: postData.post_type,
+//                         image_urls: postData.image_urls || [],
+//                         likes: [],
+//                         comments: [],
+//                         createdAt: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000)
+//                     });
+//                 }
+//                 console.log(`✅ Added ${posts.length} posts for: ${username}`);
+//             }
+//         }
+        
+//         // Add likes and comments to posts
+//         console.log('\n💬 Adding interactions...');
+//         const allPosts = await Post.find();
+//         const allUsers = Object.values(createdUsers);
+        
+//         for (const post of allPosts) {
+//             // Add random likes (2-5)
+//             const likeCount: number = Math.floor(Math.random() * 4) + 2;
+//             const shuffledUsers = [...allUsers].sort(() => 0.5 - Math.random());
+            
+//             for (let i = 0; i < Math.min(likeCount, shuffledUsers.length); i++) {
+//                 const user = shuffledUsers[i] as any;
+//                 if (!post.likes.includes(user._id)) {
+//                     post.likes.push(user._id);
+//                 }
+//             }
+            
+//             // Add random comments (1-3)
+//             const commentCount: number = Math.floor(Math.random() * 3) + 1;
+//             const comments: IComment[] = [];
+            
+//             for (let i = 0; i < Math.min(commentCount, shuffledUsers.length); i++) {
+//                 const user = shuffledUsers[i] as any;
+//                 comments.push({
+//                     user: user._id,
+//                     content: commentTexts[Math.floor(Math.random() * commentTexts.length)]!,
+//                     createdAt: new Date(Date.now() - Math.random() * 7 * 24 * 60 * 60 * 1000)
+//                 });
+//             }
+//             post.comments = comments;
+//             await post.save();
+//         }
+        
+//         // Get statistics
+//         const totalPosts: number = await Post.countDocuments();
+//         const likeStats = await Post.aggregate([
+//             { $project: { likeCount: { $size: "$likes" } } }
+//         ]);
+//         const totalLikes: number = likeStats.reduce((sum: number, doc: any) => sum + doc.likeCount, 0);
+        
+//         const commentStats = await Post.aggregate([
+//             { $project: { commentCount: { $size: "$comments" } } }
+//         ]);
+//         const totalComments: number = commentStats.reduce((sum: number, doc: any) => sum + doc.commentCount, 0);
+        
+//         // Print summary
+//         console.log('\n🎉 ========== SEEDING COMPLETE ==========');
+//         console.log(`📊 Statistics:`);
+//         console.log(`   👥 Users: ${allUsers.length}`);
+//         console.log(`   📝 Posts: ${totalPosts}`);
+//         console.log(`   ❤️ Total Likes: ${totalLikes}`);
+//         console.log(`   💬 Total Comments: ${totalComments}`);
+//         console.log(`   🔗 Follow relationships: ${followRelationships.length}`);
+//         console.log('\n🔐 Login Credentials:');
+//         console.log('   Password for ALL users: Test123!');
+//         console.log('\n📧 Available emails:');
+//         usersData.forEach(u => console.log(`   - ${u.email}`));
+//         console.log('\n💡 Tip: You can edit data directly in MongoDB Compass');
+//         console.log('==========================================\n');
+        
+//         // Disconnect
+//         await mongoose.disconnect();
+//         console.log('✅ Disconnected from database');
+        
+//     } catch (error) {
+//         console.error('❌ Error seeding data:', error);
+//         process.exit(1);
+//     }
+// }
+
+// // Run the seed function
+// seedCompleteData();
+
+
 import mongoose from 'mongoose';
 import bcrypt from 'bcrypt';
 import dotenv from 'dotenv';
@@ -7,6 +514,7 @@ dotenv.config();
 // ==================== INTERFACES ====================
 
 interface IUser {
+    _id?: mongoose.Types.ObjectId;
     email: string;
     password: string;
     full_name: string;
@@ -21,27 +529,26 @@ interface IUser {
     followers: mongoose.Types.ObjectId[];
     following: mongoose.Types.ObjectId[];
     connections: mongoose.Types.ObjectId[];
-}
-
-interface IPost {
-    user: mongoose.Types.ObjectId;
-    content: string;
-    post_type: string;
-    image_urls: string[];
-    likes: mongoose.Types.ObjectId[];
-    comments: {
-        user: mongoose.Types.ObjectId;
-        content: string;
-        createdAt: Date;
-    }[];
-    createdAt: Date;
-    updatedAt: Date;
+    createdAt?: Date;
+    updatedAt?: Date;
 }
 
 interface IComment {
     user: mongoose.Types.ObjectId;
     content: string;
     createdAt: Date;
+}
+
+interface IPost {
+    _id?: mongoose.Types.ObjectId;
+    user: mongoose.Types.ObjectId;
+    content: string;
+    post_type: string;
+    image_urls: string[];
+    likes: mongoose.Types.ObjectId[];
+    comments: IComment[];
+    createdAt: Date;
+    updatedAt?: Date;
 }
 
 interface UserData {
@@ -56,20 +563,20 @@ interface UserData {
 }
 
 interface PostData {
+    username: string;
     content: string;
     post_type: string;
     image_urls: string[];
 }
 
-interface FollowRelation {
-    follower: string;
-    following: string;
+interface CreatedUsersMap {
+    [username: string]: mongoose.Document<unknown, {}, IUser> & IUser & { _id: mongoose.Types.ObjectId };
 }
 
 // ==================== SCHEMAS ====================
 
 const userSchema = new mongoose.Schema<IUser>({
-    email: { type: String, required: true },
+    email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
     full_name: { type: String, required: true },
     username: { type: String, required: true, unique: true },
@@ -79,6 +586,7 @@ const userSchema = new mongoose.Schema<IUser>({
     cover_picture: { type: String, default: '' },
     emailVerified: { type: Boolean, default: false },
     authProvider: { type: String, default: 'local' },
+    vibe: { type: String, default: '' },
     followers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
     following: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
     connections: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }]
@@ -91,13 +599,17 @@ const postSchema = new mongoose.Schema<IPost>({
     image_urls: { type: [String], default: [] },
     likes: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
     comments: [{
-        user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+        user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
         content: { type: String, required: true },
         createdAt: { type: Date, default: Date.now }
     }],
     createdAt: { type: Date, default: Date.now },
     updatedAt: { type: Date, default: Date.now }
 });
+
+// Create models with proper typing
+const User = mongoose.model<IUser>('User', userSchema);
+const Post = mongoose.model<IPost>('Post', postSchema);
 
 // ==================== DATA ====================
 
@@ -108,8 +620,8 @@ const usersData: UserData[] = [
         email: "luna@loopin.com",
         bio: "✨ professional overthinker | matcha addict | manifesting my soft girl era 💅\n📍 currently living in my delulu era",
         location: "Brooklyn, NY (in my head)",
-        profile_picture: "https://images.unsplash.com/photo-1517841905240-472988babdf9",
-        cover_picture: "https://images.unsplash.com/photo-1522071820081-009f0129c71c",
+        profile_picture: "https://randomuser.me/api/portraits/women/1.jpg",
+        cover_picture: "https://picsum.photos/id/10/1200/400",
         vibe: "Soft Girl Aesthetic"
     },
     {
@@ -118,8 +630,8 @@ const usersData: UserData[] = [
         email: "alex@loopin.com",
         bio: "🏴‍☠️ professional yapper | sleep is for the weak | will argue about anything \n⚠️ warning: may trauma dump mid-conversation",
         location: "Austin, TX (send help)",
-        profile_picture: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e",
-        cover_picture: "https://images.unsplash.com/photo-1513151233558-860c5394c75d",
+        profile_picture: "https://randomuser.me/api/portraits/men/1.jpg",
+        cover_picture: "https://picsum.photos/id/20/1200/400",
         vibe: "Chaos Gremlin"
     },
     {
@@ -128,8 +640,8 @@ const usersData: UserData[] = [
         email: "zara@loopin.com",
         bio: "👑 CEO of my own delusions | fashion week reject | ✨ hot girl era activated \n📧 business inquiries: makeitmake@sense.com",
         location: "LA (manifesting)",
-        profile_picture: "https://images.unsplash.com/photo-1534528741775-53994a69daeb",
-        cover_picture: "https://images.unsplash.com/photo-1483985988353-7c7f6d2a7fc1",
+        profile_picture: "https://randomuser.me/api/portraits/women/2.jpg",
+        cover_picture: "https://picsum.photos/id/30/1200/400",
         vibe: "The It Girl"
     },
     {
@@ -138,8 +650,8 @@ const usersData: UserData[] = [
         email: "kai@loopin.com",
         bio: "🌙 3AM thoughts enjoyer | film photography nerd | professional sad boi \n📽️ currently: overanalyzing everything",
         location: "Seoul / Portland (depends on my mood)",
-        profile_picture: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d",
-        cover_picture: "https://images.unsplash.com/photo-1492691527719-9d1e07e534b4",
+        profile_picture: "https://randomuser.me/api/portraits/men/2.jpg",
+        cover_picture: "https://picsum.photos/id/40/1200/400",
         vibe: "The Deep Thinker"
     },
     {
@@ -148,8 +660,8 @@ const usersData: UserData[] = [
         email: "jordan@loopin.com",
         bio: "📱 professional screen time haver | meme curator | will laugh at my own jokes \n⚠️ humor may be broken, proceed with caution",
         location: "my moms basement (temporarily)",
-        profile_picture: "https://images.unsplash.com/photo-1531427186611-ecfd6d936c79",
-        cover_picture: "https://images.unsplash.com/photo-1554177255-61502b352de3",
+        profile_picture: "https://randomuser.me/api/portraits/men/3.jpg",
+        cover_picture: "https://picsum.photos/id/50/1200/400",
         vibe: "The Meme Lord"
     },
     {
@@ -158,8 +670,8 @@ const usersData: UserData[] = [
         email: "maya@loopin.com",
         bio: "🏋️‍♀️ gym rat | smoothie bowl enthusiast | ✨ healing my inner child through exercise \n📈 on a journey to be the hottest version of myself",
         location: "Toronto (cold girl walks)",
-        profile_picture: "https://images.unsplash.com/photo-1544005313-94ddf0286df2",
-        cover_picture: "https://images.unsplash.com/photo-1517836357463-d25dfeac3438",
+        profile_picture: "https://randomuser.me/api/portraits/women/3.jpg",
+        cover_picture: "https://picsum.photos/id/60/1200/400",
         vibe: "The Fitness Bestie"
     },
     {
@@ -168,8 +680,8 @@ const usersData: UserData[] = [
         email: "indigo@loopin.com",
         bio: "🎨 painting my feelings (literally) | thrift store royalty | ✨ curating my reality \n☕ coffee is my medium",
         location: "Portland, OR (very on brand)",
-        profile_picture: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80",
-        cover_picture: "https://images.unsplash.com/photo-1460661419201-fd4cecdf8a8b",
+        profile_picture: "https://randomuser.me/api/portraits/women/4.jpg",
+        cover_picture: "https://picsum.photos/id/70/1200/400",
         vibe: "The Artsy One"
     },
     {
@@ -178,171 +690,163 @@ const usersData: UserData[] = [
         email: "leo@loopin.com",
         bio: "🎮 professional button masher | 🥤 gamer fuel connoisseur | ✨ grinding irl \n🕹️ currently: losing at life but winning at games",
         location: "basement (gaming setup)",
-        profile_picture: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d",
-        cover_picture: "https://images.unsplash.com/photo-1542751371-adc38448a05e",
+        profile_picture: "https://randomuser.me/api/portraits/men/4.jpg",
+        cover_picture: "https://picsum.photos/id/80/1200/400",
         vibe: "The Gamer/Streamer"
     }
 ];
 
-const postsData: Record<string, PostData[]> = {
-    "lunalovegood_vibes": [
-        {
-            content: "just cried over a tiktok ad. marketing is getting too good 🥲 #softgirlera",
-            post_type: "text",
-            image_urls: []
-        },
-        {
-            content: "my toxic trait is thinking i can fix him 🤡",
-            post_type: "text",
-            image_urls: []
-        },
-        {
-            content: "hot girl walk? no. hot girl rot in bed? yes. 💅✨",
-            post_type: "text_with_image",
-            image_urls: ["https://images.unsplash.com/photo-1515372039744-b8f02a3ae446"]
-        },
-        {
-            content: "romanticizing my life one overpriced matcha at a time 🍵",
-            post_type: "text_with_image",
-            image_urls: ["https://images.unsplash.com/photo-1515823064-d6e0c04616a7"]
-        }
-    ],
-    "chaos_theory": [
-        {
-            content: "my attention span is so bad that i— *squirrel* 🐿️",
-            post_type: "text",
-            image_urls: []
-        },
-        {
-            content: "just spent 3 hours making a playlist for my imaginary road trip. worth it? absolutely.",
-            post_type: "text",
-            image_urls: []
-        },
-        {
-            content: "who decided adulting was a good idea? i want a refund and a manager 😤",
-            post_type: "text_with_image",
-            image_urls: ["https://images.unsplash.com/photo-1507525428034-b723cf961d3e"]
-        }
-    ],
-    "zarathedream": [
-        {
-            content: "glow up is crazy when you stop caring what people think 💅✨",
-            post_type: "text",
-            image_urls: []
-        },
-        {
-            content: "currently accepting applications for: sugar daddy, personal chef, and hype man 📝",
-            post_type: "text",
-            image_urls: []
-        },
-        {
-            content: "she believed she could so she did (after crying for 3 hours and eating ice cream)",
-            post_type: "text_with_image",
-            image_urls: ["https://images.unsplash.com/photo-1524504384850-549a1dc8b121"]
-        }
-    ],
-    "existentialkai": [
-        {
-            content: "sometimes i wonder if my phone listens to me or if i'm just that predictable",
-            post_type: "text",
-            image_urls: []
-        },
-        {
-            content: "sunset > sunrise. night owls rise up (at 2pm after sleeping through 5 alarms)",
-            post_type: "text",
-            image_urls: []
-        },
-        {
-            content: "romanticizing my life one overpriced coffee at a time ☕",
-            post_type: "text_with_image",
-            image_urls: ["https://images.unsplash.com/photo-1442512595331-e89e73853f31"]
-        }
-    ],
-    "meme_junkie": [
-        {
-            content: "my sleep schedule is a suggestion, not a commitment 🥱",
-            post_type: "text",
-            image_urls: []
-        },
-        {
-            content: "pov: you're explaining your hyperfixation to someone who didn't ask (but i'm gonna tell you anyway)",
-            post_type: "text",
-            image_urls: []
-        },
-        {
-            content: "i put the 'pro' in procrastination and the 'crastination' in... wait, let me start over",
-            post_type: "text_with_image",
-            image_urls: ["https://images.unsplash.com/photo-1555685812-4b943f1cb0eb"]
-        }
-    ],
-    "fit_maya": [
-        {
-            content: "leg day = cry day. but we still show up 💪😤",
-            post_type: "text",
-            image_urls: []
-        },
-        {
-            content: "my pre-workout is anxiety and a dream. also caffeine. mostly caffeine.",
-            post_type: "text",
-            image_urls: []
-        },
-        {
-            content: "abs are made in the kitchen. and also in therapy. and also in my head.",
-            post_type: "text_with_image",
-            image_urls: ["https://images.unsplash.com/photo-1517838277536-f5f99be501cd"]
-        }
-    ],
-    "indigoblue": [
-        {
-            content: "my art is just organized chaos. much like my brain. 🎨",
-            post_type: "text",
-            image_urls: []
-        },
-        {
-            content: "who needs therapy when you have a paintbrush and existential dread? (kidding, go to therapy)",
-            post_type: "text",
-            image_urls: []
-        },
-        {
-            content: "creating my dream life one canvas at a time 🖼️✨",
-            post_type: "text_with_image",
-            image_urls: ["https://images.unsplash.com/photo-1460661419201-fd4cecdf8a8b"]
-        }
-    ],
-    "leo_lvl99": [
-        {
-            content: "i'm not addicted to gaming. i'm committed to the grind. 💻🎮",
-            post_type: "text",
-            image_urls: []
-        },
-        {
-            content: "sleep is for the weak. rank is for the strong. (says while falling asleep at 3am)",
-            post_type: "text",
-            image_urls: []
-        },
-        {
-            content: "my k/d ratio in life is not as good as in games. send help and energy drinks.",
-            post_type: "text_with_image",
-            image_urls: ["https://images.unsplash.com/photo-1542751371-adc38448a05e"]
-        }
-    ]
-};
-
-const followRelationships: FollowRelation[] = [
-    { follower: "chaos_theory", following: "lunalovegood_vibes" },
-    { follower: "chaos_theory", following: "meme_junkie" },
-    { follower: "zarathedream", following: "lunalovegood_vibes" },
-    { follower: "zarathedream", following: "fit_maya" },
-    { follower: "existentialkai", following: "indigoblue" },
-    { follower: "existentialkai", following: "lunalovegood_vibes" },
-    { follower: "meme_junkie", following: "chaos_theory" },
-    { follower: "meme_junkie", following: "leo_lvl99" },
-    { follower: "fit_maya", following: "zarathedream" },
-    { follower: "fit_maya", following: "lunalovegood_vibes" },
-    { follower: "indigoblue", following: "existentialkai" },
-    { follower: "indigoblue", following: "lunalovegood_vibes" },
-    { follower: "leo_lvl99", following: "meme_junkie" },
-    { follower: "leo_lvl99", following: "chaos_theory" }
+const postsData: PostData[] = [
+    {
+        username: "lunalovegood_vibes",
+        content: "just cried over a tiktok ad. marketing is getting too good 🥲 #softgirlera",
+        post_type: "text",
+        image_urls: []
+    },
+    {
+        username: "lunalovegood_vibes",
+        content: "my toxic trait is thinking i can fix him 🤡",
+        post_type: "text",
+        image_urls: []
+    },
+    {
+        username: "lunalovegood_vibes",
+        content: "hot girl walk? no. hot girl rot in bed? yes. 💅✨",
+        post_type: "text_with_image",
+        image_urls: ["https://picsum.photos/id/1/600/400"]
+    },
+    {
+        username: "lunalovegood_vibes",
+        content: "romanticizing my life one overpriced matcha at a time 🍵",
+        post_type: "text_with_image",
+        image_urls: ["https://picsum.photos/id/15/600/400"]
+    },
+    {
+        username: "chaos_theory",
+        content: "my attention span is so bad that i— *squirrel* 🐿️",
+        post_type: "text",
+        image_urls: []
+    },
+    {
+        username: "chaos_theory",
+        content: "just spent 3 hours making a playlist for my imaginary road trip. worth it? absolutely.",
+        post_type: "text",
+        image_urls: []
+    },
+    {
+        username: "chaos_theory",
+        content: "who decided adulting was a good idea? i want a refund and a manager 😤",
+        post_type: "text_with_image",
+        image_urls: ["https://picsum.photos/id/25/600/400"]
+    },
+    {
+        username: "zarathedream",
+        content: "glow up is crazy when you stop caring what people think 💅✨",
+        post_type: "text",
+        image_urls: []
+    },
+    {
+        username: "zarathedream",
+        content: "currently accepting applications for: sugar daddy, personal chef, and hype man 📝",
+        post_type: "text",
+        image_urls: []
+    },
+    {
+        username: "zarathedream",
+        content: "she believed she could so she did (after crying for 3 hours and eating ice cream)",
+        post_type: "text_with_image",
+        image_urls: ["https://picsum.photos/id/26/600/400"]
+    },
+    {
+        username: "existentialkai",
+        content: "sometimes i wonder if my phone listens to me or if i'm just that predictable",
+        post_type: "text",
+        image_urls: []
+    },
+    {
+        username: "existentialkai",
+        content: "sunset > sunrise. night owls rise up (at 2pm after sleeping through 5 alarms)",
+        post_type: "text",
+        image_urls: []
+    },
+    {
+        username: "existentialkai",
+        content: "romanticizing my life one overpriced coffee at a time ☕",
+        post_type: "text_with_image",
+        image_urls: ["https://picsum.photos/id/30/600/400"]
+    },
+    {
+        username: "meme_junkie",
+        content: "my sleep schedule is a suggestion, not a commitment 🥱",
+        post_type: "text",
+        image_urls: []
+    },
+    {
+        username: "meme_junkie",
+        content: "pov: you're explaining your hyperfixation to someone who didn't ask (but i'm gonna tell you anyway)",
+        post_type: "text",
+        image_urls: []
+    },
+    {
+        username: "meme_junkie",
+        content: "i put the 'pro' in procrastination and the 'crastination' in... wait, let me start over",
+        post_type: "text_with_image",
+        image_urls: ["https://picsum.photos/id/35/600/400"]
+    },
+    {
+        username: "fit_maya",
+        content: "leg day = cry day. but we still show up 💪😤",
+        post_type: "text",
+        image_urls: []
+    },
+    {
+        username: "fit_maya",
+        content: "my pre-workout is anxiety and a dream. also caffeine. mostly caffeine.",
+        post_type: "text",
+        image_urls: []
+    },
+    {
+        username: "fit_maya",
+        content: "abs are made in the kitchen. and also in therapy. and also in my head.",
+        post_type: "text_with_image",
+        image_urls: ["https://picsum.photos/id/45/600/400"]
+    },
+    {
+        username: "indigoblue",
+        content: "my art is just organized chaos. much like my brain. 🎨",
+        post_type: "text",
+        image_urls: []
+    },
+    {
+        username: "indigoblue",
+        content: "who needs therapy when you have a paintbrush and existential dread? (kidding, go to therapy)",
+        post_type: "text",
+        image_urls: []
+    },
+    {
+        username: "indigoblue",
+        content: "creating my dream life one canvas at a time 🖼️✨",
+        post_type: "text_with_image",
+        image_urls: ["https://picsum.photos/id/55/600/400"]
+    },
+    {
+        username: "leo_lvl99",
+        content: "i'm not addicted to gaming. i'm committed to the grind. 💻🎮",
+        post_type: "text",
+        image_urls: []
+    },
+    {
+        username: "leo_lvl99",
+        content: "sleep is for the weak. rank is for the strong. (says while falling asleep at 3am)",
+        post_type: "text",
+        image_urls: []
+    },
+    {
+        username: "leo_lvl99",
+        content: "my k/d ratio in life is not as good as in games. send help and energy drinks.",
+        post_type: "text_with_image",
+        image_urls: ["https://picsum.photos/id/65/600/400"]
+    }
 ];
 
 const commentTexts: string[] = [
@@ -350,40 +854,58 @@ const commentTexts: string[] = [
     "felt that 💯",
     "literally me fr fr",
     "couldn't agree more ✨",
-    "this post called me out",
     "so true bestie",
     "my toxic trait is relating to this",
     "are you me??",
     "sending this to my group chat",
-    "the way i feel seen rn"
+    "the way i feel seen rn",
+    "this post called me out"
 ];
 
-// ==================== MAIN FUNCTION ====================
+// ==================== HELPER FUNCTIONS ====================
+
+function getRandomItems<T>(array: T[], count: number): T[] {
+    const shuffled = [...array].sort(() => 0.5 - Math.random());
+    return shuffled.slice(0, Math.min(count, array.length));
+}
+
+function getRandomDate(daysBack: number = 30): Date {
+    return new Date(Date.now() - Math.random() * daysBack * 24 * 60 * 60 * 1000);
+}
+
+// ==================== MAIN SEED FUNCTION ====================
 
 async function seedCompleteData(): Promise<void> {
     try {
-        // Connect to database
-        if (!process.env.DATABASE_URL) {
+        // Validate environment variable
+        const databaseUrl = process.env.DATABASE_URL;
+        if (!databaseUrl) {
             throw new Error('DATABASE_URL is not defined in environment variables');
         }
-        
-        await mongoose.connect(process.env.DATABASE_URL!, {
+
+        console.log('📦 Connecting to database...');
+        await mongoose.connect(databaseUrl, {
             dbName: 'LoopinDatabase'
         });
-        console.log('📦 Connected to database' );
-    
-        
-        // Create models
-        const User = mongoose.model<IUser>('User', userSchema);
-        const Post = mongoose.model<IPost>('Post', postSchema);
-        
+        console.log('✅ Connected to database');
+
+        // Drop existing database (clear old data)
+        const db = mongoose.connection.db;
+        if (db) {
+            await db.dropDatabase();
+            console.log('🗑️ Dropped existing database');
+        } else {
+            console.log('⚠️ Database connection not available, skipping drop');
+        }
+
+        // Hash password once for all users
         const defaultPassword: string = await bcrypt.hash('Test123!', 12);
-        const createdUsers: Record<string, any> = {};
-        
+        const createdUsers: CreatedUsersMap = {};
+
         // Create users
         console.log('\n👥 Creating users...');
         for (const userData of usersData) {
-            const user = await User.create({
+            const user = new User({
                 ...userData,
                 password: defaultPassword,
                 emailVerified: true,
@@ -392,109 +914,125 @@ async function seedCompleteData(): Promise<void> {
                 following: [],
                 connections: []
             });
-            createdUsers[user.username] = user;
-            console.log(`✅ Created: ${user.username} (${userData.vibe})`);
+
+            const savedUser = await user.save();
+            createdUsers[savedUser.username] = savedUser as mongoose.Document<unknown, {}, IUser> & IUser & { _id: mongoose.Types.ObjectId };
+            console.log(`✅ Created: ${savedUser.username} (${userData.vibe})`);
         }
-        
+
+        const allUsers = Object.values(createdUsers);
+        console.log(`\n📊 Created ${allUsers.length} users`);
+
         // Create follow relationships
         console.log('\n🔗 Creating follow relationships...');
-        for (const relation of followRelationships) {
-            const follower: any = createdUsers[relation.follower];
-            const following: any = createdUsers[relation.following];
-            
-            if (follower && following) {
-                follower.following.push(following._id);
-                following.followers.push(follower._id);
-                await follower.save();
-                await following.save();
-                console.log(`✅ ${relation.follower} → following → ${relation.following}`);
+        let totalFollows = 0;
+
+        for (const user of allUsers) {
+            // Each user follows 3-5 random other users
+            const otherUsers = allUsers.filter(u => u._id.toString() !== user._id.toString());
+            const usersToFollow = getRandomItems(otherUsers, Math.floor(Math.random() * 3) + 3);
+
+            for (const userToFollow of usersToFollow) {
+                if (!user.following.includes(userToFollow._id)) {
+                    user.following.push(userToFollow._id);
+                    userToFollow.followers.push(user._id);
+                    await userToFollow.save();
+                    totalFollows++;
+                }
             }
+            await user.save();
         }
-        
+        console.log(`✅ Created ${totalFollows} follow relationships`);
+
         // Create posts
         console.log('\n📝 Creating posts...');
-        for (const [username, posts] of Object.entries(postsData)) {
-            const user: any = createdUsers[username];
+        const createdPosts: Array<mongoose.Document<unknown, {}, IPost> & IPost & { _id: mongoose.Types.ObjectId }> = [];
+
+        for (const postData of postsData) {
+            const user = createdUsers[postData.username];
             if (user) {
-                for (const postData of posts) {
-                    await Post.create({
-                        user: user._id,
-                        content: postData.content,
-                        post_type: postData.post_type,
-                        image_urls: postData.image_urls || [],
-                        likes: [],
-                        comments: [],
-                        createdAt: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000)
-                    });
-                }
-                console.log(`✅ Added ${posts.length} posts for: ${username}`);
+                const post = new Post({
+                    user: user._id,
+                    content: postData.content,
+                    post_type: postData.post_type,
+                    image_urls: postData.image_urls || [],
+                    likes: [],
+                    comments: [],
+                    createdAt: getRandomDate(30)
+                });
+                const savedPost = await post.save();
+                createdPosts.push(savedPost as mongoose.Document<unknown, {}, IPost> & IPost & { _id: mongoose.Types.ObjectId });
             }
         }
-        
+        console.log(`✅ Created ${createdPosts.length} posts`);
+
         // Add likes and comments to posts
-        console.log('\n💬 Adding interactions...');
-        const allPosts = await Post.find();
-        const allUsers = Object.values(createdUsers);
-        
-        for (const post of allPosts) {
-            // Add random likes (2-5)
-            const likeCount: number = Math.floor(Math.random() * 4) + 2;
-            const shuffledUsers = [...allUsers].sort(() => 0.5 - Math.random());
-            
-            for (let i = 0; i < Math.min(likeCount, shuffledUsers.length); i++) {
-                const user = shuffledUsers[i] as any;
+        console.log('\n💬 Adding interactions (likes & comments)...');
+        let totalLikes = 0;
+        let totalComments = 0;
+
+        for (const post of createdPosts) {
+            // Add random likes (3-8)
+            const likeCount = Math.floor(Math.random() * 6) + 3;
+            const usersToLike = getRandomItems(allUsers, likeCount);
+
+            for (const user of usersToLike) {
                 if (!post.likes.includes(user._id)) {
                     post.likes.push(user._id);
+                    totalLikes++;
                 }
             }
-            
-            // Add random comments (1-3)
-            const commentCount: number = Math.floor(Math.random() * 3) + 1;
+
+            // Add random comments (2-5)
+            const commentCount = Math.floor(Math.random() * 4) + 2;
+            const usersToComment = getRandomItems(allUsers, commentCount);
+
             const comments: IComment[] = [];
-            
-            for (let i = 0; i < Math.min(commentCount, shuffledUsers.length); i++) {
-                const user = shuffledUsers[i] as any;
+            for (const user of usersToComment) {
                 comments.push({
                     user: user._id,
-                    content: commentTexts[Math.floor(Math.random() * commentTexts.length)]!,
-                    createdAt: new Date(Date.now() - Math.random() * 7 * 24 * 60 * 60 * 1000)
+                    content: getRandomItems(commentTexts, 1)[0] || 'Nice post!',
+                    createdAt: getRandomDate(7)
                 });
+                totalComments++;
             }
             post.comments = comments;
             await post.save();
         }
+
+        // Get final statistics
+        const finalPostCount = await Post.countDocuments();
+        const finalUserCount = await User.countDocuments();
         
-        // Get statistics
-        const totalPosts: number = await Post.countDocuments();
         const likeStats = await Post.aggregate([
             { $project: { likeCount: { $size: "$likes" } } }
         ]);
-        const totalLikes: number = likeStats.reduce((sum: number, doc: any) => sum + doc.likeCount, 0);
+        const finalTotalLikes = likeStats.reduce((sum: number, doc: any) => sum + doc.likeCount, 0);
         
         const commentStats = await Post.aggregate([
             { $project: { commentCount: { $size: "$comments" } } }
         ]);
-        const totalComments: number = commentStats.reduce((sum: number, doc: any) => sum + doc.commentCount, 0);
-        
+        const finalTotalComments = commentStats.reduce((sum: number, doc: any) => sum + doc.commentCount, 0);
+
         // Print summary
         console.log('\n🎉 ========== SEEDING COMPLETE ==========');
         console.log(`📊 Statistics:`);
-        console.log(`   👥 Users: ${allUsers.length}`);
-        console.log(`   📝 Posts: ${totalPosts}`);
-        console.log(`   ❤️ Total Likes: ${totalLikes}`);
-        console.log(`   💬 Total Comments: ${totalComments}`);
-        console.log(`   🔗 Follow relationships: ${followRelationships.length}`);
+        console.log(`   👥 Users: ${finalUserCount}`);
+        console.log(`   📝 Posts: ${finalPostCount}`);
+        console.log(`   ❤️ Total Likes: ${finalTotalLikes}`);
+        console.log(`   💬 Total Comments: ${finalTotalComments}`);
+        console.log(`   🔗 Follow relationships: ${totalFollows}`);
         console.log('\n🔐 Login Credentials:');
         console.log('   Password for ALL users: Test123!');
         console.log('\n📧 Available emails:');
         usersData.forEach(u => console.log(`   - ${u.email}`));
         console.log('\n💡 Tip: You can edit data directly in MongoDB Compass');
         console.log('==========================================\n');
-        
+
         // Disconnect
         await mongoose.disconnect();
         console.log('✅ Disconnected from database');
-        
+
     } catch (error) {
         console.error('❌ Error seeding data:', error);
         process.exit(1);
@@ -502,4 +1040,4 @@ async function seedCompleteData(): Promise<void> {
 }
 
 // Run the seed function
-seedCompleteData();
+seedCompleteData().catch(console.error);

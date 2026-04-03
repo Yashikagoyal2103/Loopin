@@ -25,7 +25,8 @@ const PostCard = ({ post }: PostCardProps) => {
     ? post.image_urls
     : (post.image_urls ? [post.image_urls as unknown as string] : []);
    const postWithHashTags = safeContent.replace(/(#\w+)/g, '<span class="text-blue-500">$1</span>');
-   const [likes, setLikes] = useState<string[]>(post.likes_count || []);
+   const normalizeIds = (arr: any[] = []) => arr.map((id) => id?.toString());
+   const [likes, setLikes] = useState<string[]>(normalizeIds(post.likes_count || []));
    const [comments, setComments] = useState<Comment[]>(post.comments || []);
    const [shares, setShares] = useState<number>(post.shares_count || 0);
    const [showComments, setShowComments] = useState(false);
@@ -251,16 +252,16 @@ const PostCard = ({ post }: PostCardProps) => {
                                        src={comment.user?.profile_picture || '/default-avatar.png'} 
                                        alt={comment.user?.full_name} 
                                        className="w-8 h-8 rounded-full object-cover cursor-pointer"
-                                       onClick={() => navigate('/profile/' + comment.user._id)}
+                                               onClick={() => comment.user?._id && navigate('/profile/' + comment.user._id)}
                                    />
                                    <div className="flex-1">
                                        <div className="bg-gray-50 rounded-lg p-2">
                                            <div className="flex items-center gap-2">
                                                <span 
                                                    className="font-semibold text-sm cursor-pointer hover:underline"
-                                                   onClick={() => navigate('/profile/' + comment.user._id)}
+                                       onClick={() => comment.user?._id && navigate('/profile/' + comment.user._id)}
                                                >
-                                                   {comment.user?.full_name}
+                                                   {comment.user?.full_name || 'Unknown user'}
                                                </span>
                                                <span className="text-xs text-gray-500">
                                                    {moment(comment.createdAt).fromNow()}

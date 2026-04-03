@@ -18,7 +18,9 @@ type Props = {
 const UserProfileInfo = ({user, posts, profileId , setShowEdit, onProfileUpdated}: Props) => {
   const currentUser = useSelector((state: RootState) => state.user.value);
   const isOwnProfile = !profileId || currentUser?._id === user._id;
-  const isFollowingFromStore = !!currentUser?._id && (currentUser.following || []).includes(user._id);
+  const isFollowingFromStore =
+    !!currentUser?._id &&
+    (currentUser.following || []).some((id: any) => id?.toString() === user._id);
   const [isFollowing, setIsFollowing] = useState(isFollowingFromStore);
 
   useEffect(() => {
@@ -45,12 +47,12 @@ const UserProfileInfo = ({user, posts, profileId , setShowEdit, onProfileUpdated
   return (
     <div className='relative py-4 px-6 md:px-8 bg-white '>
         <div className='flex flex-col md:flex-row items-start gap-6'>
-            <div className='w-32 h-32 border-4 border-white shadow-lg absolute -top-16 rounded-full '>
-                <img src={user.profile_picture} alt="Profile" className='absolute rounded-full z-2'/>
+            <div className='w-[200px] h-[200px] border-4 border-white shadow-lg absolute -top-24 rounded-full overflow-hidden bg-white'>
+                <img src={user.profile_picture} alt="Profile" className='w-full h-full object-cover'/>
             </div>
 
 
-            <div className='w-full pt-16 md:pt-0 md:pl-36 '>
+            <div className='w-full pt-28 md:pt-0 md:pl-56 '>
                 <div className='flex flex-col md:flex-row items-start justify-between '>
                     <div>
                         <div className='flex items-center gap-3'>

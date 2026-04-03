@@ -30,7 +30,7 @@ const Sidebar = ({ sidebarOpen , setSidebarOpen, darkMode, setDarkMode }:Props) 
           <img
             src={assets.logo}
             alt="Loopin"
-            className="h-8 w-auto max-h-8 object-contain object-left opacity-90 dark:opacity-[0.88] dark:brightness-110 dark:contrast-95"
+            className="h-12 sm:h-14 md:h-16 lg:h-14 w-auto object-contain object-left opacity-90 dark:opacity-[0.88] dark:brightness-110 dark:contrast-95"
           />
         </button>
         <hr className='border-gray-300 mb-8' /> 
