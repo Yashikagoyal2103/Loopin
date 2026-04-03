@@ -119,10 +119,63 @@ export const getFeedPosts = async (req: Request, res: Response) => {
             .map((id) => new mongoose.Types.ObjectId(id));
         const query = networkObjectIds.length > 1 ? { user: { $in: networkObjectIds } } : {};
 
-        const posts = await Post.find(query)
+        let posts = await Post.find(query)
             .populate('user', 'full_name username profile_picture')
             .populate('comments.user', 'full_name username profile_picture')
             .sort({ createdAt: -1 });
+
+        // If user has no connections/following OR feed is empty, get recent posts
+        const hasNetwork = (user.connections && user.connections.length > 0) || 
+                          (user.following && user.following.length > 0);
+        
+        if (!hasNetwork || posts.length === 0) {
+            // Get recent posts from all users (last 30 days)
+            const thirtyDaysAgo = new Date();
+            thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+            
+            const recentPosts = await Post.find({
+                createdAt: { $gte: thirtyDaysAgo }
+            })
+            .populate('user', 'full_name username profile_picture')
+            .populate('comments.user', 'full_name username profile_picture')
+            .sort({ likes_count: -1, createdAt: -1 }) // Sort by most liked first, then newest
+            .limit(20);
+            
+            // If still no posts, get any posts available
+            if (recentPosts.length === 0) {
+                const anyPosts = await Post.find()
+                    .populate('user', 'full_name username profile_picture')
+                    .populate('comments.user', 'full_name username profile_picture')
+                    .sort({ createdAt: -1 })
+                    .limit(20);
+                
+                const normalizedAnyPosts = anyPosts.map((post: any) => {
+                    const p = post.toObject ? post.toObject() : post;
+                    p.likes_count = p.likes_count?.length ? p.likes_count : (p.likes || []);
+                    return p;
+                });
+                
+                return res.json({ 
+                    success: true, 
+                    posts: normalizedAnyPosts,
+                    isFallbackFeed: true,
+                    message: "Showing recent posts from the community"
+                });
+            }
+            
+            const normalizedRecentPosts = recentPosts.map((post: any) => {
+                const p = post.toObject ? post.toObject() : post;
+                p.likes_count = p.likes_count?.length ? p.likes_count : (p.likes || []);
+                return p;
+            });
+            
+            return res.json({ 
+                success: true, 
+                posts: normalizedRecentPosts,
+                isFallbackFeed: true,
+                message: "Follow users to see personalized content"
+            });
+        }
 
         const normalizedPosts = posts.map((post: any) => {
             const p = post.toObject ? post.toObject() : post;
@@ -130,7 +183,7 @@ export const getFeedPosts = async (req: Request, res: Response) => {
             return p;
         });
 
-        res.json({ success: true, posts: normalizedPosts });
+        res.json({ success: true, posts: normalizedPosts, isFallbackFeed: false });
 
     } catch (error: unknown) {
         console.error("Error getting posts:", error);
