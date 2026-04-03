@@ -33,9 +33,8 @@ const StoriesBar = () => {
     }, [])
 
   return (
-    <div className='w-screen sm:w-[calc(100vw-240px)] lg:max-w-3xl no-scrollbar scrollbar-hide overflow-x-auto px-4 mt-5'>
-
-        <div className='gap-4 flex pb-5 '>
+    <div className="mt-3 w-full max-w-full min-w-0 overflow-x-auto px-3 scrollbar-hide sm:px-4 md:mt-5 lg:max-w-3xl">
+        <div className="flex gap-3 pb-4 sm:gap-4 sm:pb-5">
             {/* Add Story Card */}
             <div onClick={() => setShowModel(true)} className="rounded-lg shadow-sm min-w-30 max-w-30 max-h-40 aspect-[3/4] cursor-pointer hover-shadow-lg transition-all
             duration-200 border-2 border-dashed border-indigo-300 bg-gradient-to-b from-indigo-50 to-white">

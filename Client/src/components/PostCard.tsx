@@ -135,26 +135,26 @@ const PostCard = ({ post }: PostCardProps) => {
    };
 
    return (
-       <div className="bg-white rounded-xl shadow p-4 space-y-4 w-full max-w-2xl">
+       <div className="w-full max-w-2xl space-y-3 rounded-2xl border border-slate-200/80 bg-white p-3 shadow-sm sm:space-y-4 sm:p-4 dark:border-slate-700 dark:bg-slate-900">
            {/* User info */}
            <div onClick={() => safeUser._id && navigate('/profile/' + safeUser._id)} className="cursor-pointer">
-               <div className="flex items-center justify-between">
-                   <div className="flex items-center gap-3">
+               <div className="flex items-start justify-between gap-2">
+                   <div className="flex min-w-0 items-center gap-3">
                        <img 
                            src={safeUser.profile_picture || '/default-avatar.png'} 
                            alt="User" 
-                           className="w-10 h-10 rounded-full shadow object-cover" 
+                           className="size-11 shrink-0 rounded-full object-cover shadow sm:size-10" 
                        />
-                       <div>
+                       <div className="min-w-0">
                            <div className="flex items-center gap-1">
-                               <span className="font-semibold text-gray-900">{safeUser.full_name}</span>
+                               <span className="truncate font-semibold text-gray-900 dark:text-slate-100">{safeUser.full_name}</span>
                            </div>
-                           <div className='text-gray-500 text-sm'>
+                           <div className="truncate text-sm text-gray-500 dark:text-slate-400">
                                @{safeUser.username}
                            </div>
                        </div>
                    </div>
-                   <div className='text-gray-400 text-xs'>
+                   <div className="shrink-0 text-xs text-gray-400 dark:text-slate-500">
                        {moment(post.createdAt).fromNow()}
                    </div>
                </div>
@@ -163,7 +163,7 @@ const PostCard = ({ post }: PostCardProps) => {
            {/* Content */}
            {safeContent && (
                <div 
-                   className='text-gray-800 text-sm whitespace-pre-line'
+                   className="whitespace-pre-line text-base text-gray-800 sm:text-sm dark:text-slate-200"
                    dangerouslySetInnerHTML={{__html: postWithHashTags}}
                />
            )}
@@ -176,39 +176,42 @@ const PostCard = ({ post }: PostCardProps) => {
                            src={img} 
                            key={index} 
                            alt='' 
-                           className={`w-full ${safeImageUrls.length === 1 ? 'h-auto' : 'h-48'} object-cover rounded-lg`}
+                           className={`w-full ${safeImageUrls.length === 1 ? 'max-h-[min(70vh,520px)] h-auto' : 'h-40 sm:h-48'} rounded-lg object-cover`}
                        />
                    ))}
                </div>
            )}
 
            {/* Actions */}
-           <div className="flex items-center text-gray-600 text-sm gap-4 pt-2 border-t border-gray-300">
+           <div className="flex items-center gap-1 border-t border-gray-200 pt-2 text-gray-600 dark:border-slate-700 dark:text-slate-300 sm:gap-4">
                <button 
-                   className="flex items-center gap-1 hover:text-red-500 transition-colors"
+                   type="button"
+                   className="inline-flex min-h-11 min-w-11 items-center gap-1.5 rounded-xl px-2 text-sm hover:text-red-500 sm:min-h-0 sm:min-w-0 sm:px-0"
                    onClick={handleLike}
                >
                    <Heart 
-                       className={`w-5 h-5 ${currentUser?._id && likes.includes(currentUser._id) ? 'fill-red-500 text-red-500' : ''}`} 
+                       className={`h-6 w-6 sm:h-5 sm:w-5 ${currentUser?._id && likes.includes(currentUser._id) ? 'fill-red-500 text-red-500' : ''}`} 
                    />
-                   <span>{likes.length}</span>
+                   <span className="text-sm tabular-nums">{likes.length}</span>
                </button>
                
                <button 
-                   className="flex items-center gap-1 hover:text-blue-500 transition-colors"
+                   type="button"
+                   className="inline-flex min-h-11 min-w-11 items-center gap-1.5 rounded-xl px-2 text-sm hover:text-blue-500 sm:min-h-0 sm:min-w-0 sm:px-0"
                    onClick={loadComments}
                    disabled={isLoadingComments}
                >
-                   <MessageCircle className="w-5 h-5" />
-                   <span>{comments.length}</span>
+                   <MessageCircle className="h-6 w-6 sm:h-5 sm:w-5" />
+                   <span className="text-sm tabular-nums">{comments.length}</span>
                </button>
                
                <button 
-                   className="flex items-center gap-1 hover:text-green-500 transition-colors"
+                   type="button"
+                   className="inline-flex min-h-11 min-w-11 items-center gap-1.5 rounded-xl px-2 text-sm hover:text-green-500 sm:min-h-0 sm:min-w-0 sm:px-0"
                    onClick={handleShare}
                >
-                   <Share2 className="w-5 h-5" />
-                   <span>{shares}</span>
+                   <Share2 className="h-6 w-6 sm:h-5 sm:w-5" />
+                   <span className="text-sm tabular-nums">{shares}</span>
                </button>
            </div>
 

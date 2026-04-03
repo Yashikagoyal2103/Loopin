@@ -45,27 +45,34 @@ const Discover = () => {
 
 
   return (
-    <div className='min-h-screen bg-gradient-to-b from-slate-50 to-white'>
-      <div className='max-w-6xl mx-auto p-6'>
+    <div className="min-h-full bg-gradient-to-b from-slate-50 to-white dark:from-slate-950 dark:to-slate-900 md:min-h-0 md:h-full md:overflow-y-auto">
+      <div className="mx-auto max-w-6xl px-3 py-4 md:p-6">
         {/* Title */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-slate-900 mb-2">Discover People</h1>
-          <p className="text-slate-600">Connect with Amazing people and grow your network</p>
+        <div className="mb-4 md:mb-8">
+          <h1 className="mb-1 text-2xl font-bold text-slate-900 dark:text-slate-100 md:mb-2 md:text-3xl">Discover People</h1>
+          <p className="text-sm text-slate-600 dark:text-slate-400 md:text-base">
+            Connect with amazing people and grow your network
+          </p>
         </div>
 
         {/* Search */}
-        <div className='mb-8 shadow-md rounded-md border border-slate-200/60 bg-white/80'>
-          <div className='p-6'>
-            <div className='relative'>
-              <Search className='absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-slate-400' />
-              <input type='text' value={input} onChange={(e)=> setInput(e.target.value)} onKeyUp={handleSearch} 
-              placeholder='Search by name, username, bio or location....' className='w-full pl-10 sm:pl-12 py-2 
-              border border-gray-300 rounded-md max-sm:text-sm' />
+        <div className="mb-6 rounded-xl border border-slate-200/60 bg-white/90 shadow-md dark:border-slate-700 dark:bg-slate-900/80 md:mb-8">
+          <div className="p-4 md:p-6">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400" />
+              <input
+                type="text"
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyUp={handleSearch}
+                placeholder="Search by name, username, bio, or location..."
+                className="w-full rounded-lg border border-gray-300 py-3 pl-10 pr-3 text-base text-slate-900 outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/25 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 sm:pl-12 md:py-2 md:text-sm"
+              />
             </div>
           </div>
         </div>
 
-        <div className='flex flex-wrap gap-3'>
+        <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap md:gap-3">
           {users.map((user) =>(
             <UserCard user={user} key={user._id} />
           ))}

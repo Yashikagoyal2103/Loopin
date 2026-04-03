@@ -1,5 +1,5 @@
-import { useState , useEffect } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { useState, useEffect } from 'react'
+import { Link, useParams, useLocation } from 'react-router-dom'
 import {type Post  , type User} from '../assets/assets'
 import Loading from '../components/Loading'
 import UserProfileInfo from '../components/UserProfileInfo'
@@ -12,10 +12,10 @@ import { useSelector } from 'react-redux'
 import type { RootState } from '../app/store'
 
 const Profile = () => {
+  const location = useLocation()
+  const currentUser = useSelector((state: RootState) => state.user.value)
 
-  const currentUser = useSelector((state: RootState) => state.user.value);
-  
-  const {profileId} = useParams()
+  const { profileId } = useParams()
   const [user, setUser] = useState<User | null>(null)
   const [posts, setPosts] =useState<Post[]>([])
   const [likedPosts, setLikedPosts] = useState<Post[]>([])
@@ -54,9 +54,13 @@ const Profile = () => {
   }
   }, [profileId, currentUser])
 
+  useEffect(() => {
+    if (location.hash === '#likes') setActiveTab('likes')
+  }, [location.hash])
+
   return user? (
-    <div className='relative h-full overflow-y-scroll bg-gray-50 p-6'>
-      <div className='max-w-3xl mx-auto'>
+    <div className="relative min-h-full bg-gray-50 dark:bg-slate-950 md:h-full md:min-h-0 md:overflow-y-auto">
+      <div className="mx-auto max-w-3xl p-3 pb-8 md:p-6">
         {/* Profile Card */}
         <div className='bg-white rounded-2xl shadow overflow-hidden'>
           {/* Cover Photo */}

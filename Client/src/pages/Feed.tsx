@@ -34,32 +34,32 @@ const Feed = () => {
   },[])
 
   return !loading ? (
-    <div className='h-full overflow-y-scroll no-scrollbar py010 xl:pr-5 flex items-start justify-center xl:gap-8'>
+    <div className="flex w-full max-w-full flex-1 flex-col items-stretch justify-start md:min-h-0 md:h-full md:overflow-y-auto md:overscroll-contain xl:flex-row xl:items-start xl:justify-center xl:gap-8 xl:pr-5">
       {/* Stories and post List */}
-      <div>
+      <div className="w-full min-w-0 max-w-full flex-1">
         <StoriesBar />
 
         {/* List of Posts */}
-        <div className='p-4 space-y-6' >
+        <div className="space-y-4 px-3 pb-6 sm:space-y-6 sm:px-4 md:px-6">
           {feeds.map((post) => (
-            <PostCard key={post._id} post={post}/>
-          ))} 
-
-         </div>
+            <PostCard key={post._id} post={post} />
+          ))}
+        </div>
       </div>
 
       {/* Right Sidebar */}
-      <div>
-          <div className="max-xl:hidden sticky top-4">
-            <div className="max-w-xs bg-white text-xs p-4 rounded-md inline-flex flex-col gap-2 shadow">
-              <h3 className="text-slate-800  font-semibold">Sponsored</h3>
-              <img className="w-75 h-50 rounded-md" alt="" src={assets.sponsored_img} />
-              <p className="text-slate-600">Email marketing</p>
-              <p className="text-slate-400">Supercharge your marketing with a powerful, easy-to-use platform built for results.</p>
-            </div>
+      <div className="hidden w-full min-w-0 max-w-sm shrink-0 md:block">
+        <div className="sticky top-4 space-y-6">
+          <div className="hidden max-w-xs flex-col gap-2 rounded-md bg-white p-4 text-xs shadow xl:inline-flex dark:bg-slate-900 dark:text-slate-200">
+            <h3 className="font-semibold text-slate-800 dark:text-slate-100">Sponsored</h3>
+            <img className="h-50 w-75 rounded-md" alt="" src={assets.sponsored_img} />
+            <p className="text-slate-600 dark:text-slate-300">Email marketing</p>
+            <p className="text-slate-400 dark:text-slate-500">
+              Supercharge your marketing with a powerful, easy-to-use platform built for results.
+            </p>
           </div>
-
-        <RecentMessages />
+          <RecentMessages />
+        </div>
       </div>
     </div>
   ) : (

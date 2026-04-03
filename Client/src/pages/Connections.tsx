@@ -59,31 +59,31 @@ const Connections = () => {
     dispatch(fetchConnections())
   },[dispatch])
   return (
-    <div className="min-h-screen bg-slate-50">
-      <div className="max-w-6xl mx-auto p-6">
+    <div className="min-h-full bg-slate-50 dark:bg-slate-950 md:min-h-0 md:h-full md:overflow-y-auto">
+      <div className="mx-auto max-w-6xl px-3 py-4 md:p-6">
 
         {/* Title */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-slate-900 mb-2">Connections</h1>
-          <p className="text-slate-600">Manage your network and discover new connections</p>
+        <div className="mb-4 md:mb-8">
+          <h1 className="mb-1 text-2xl font-bold text-slate-900 dark:text-slate-100 md:mb-2 md:text-3xl">Connections</h1>
+          <p className="text-sm text-slate-600 dark:text-slate-400 md:text-base">Manage your network and discover new connections</p>
         </div>
 
-        {/* Counts */}
-        <div className="flex flex-wrap gap-6 mb-8 ">
+        {/* Counts — desktop only (tabs below show the same counts on mobile) */}
+        <div className="mb-8 hidden flex-wrap gap-6 md:flex">
           {dataArray.map((item ,index) => (
-            <div key={index} className='flex flex-col items-center justify-center gap-1 border h-20 w-40 border-gray-200 bg-white  shadow rounded-md'>
-              <b>{item.value.length}</b>
-              <p className="text-slate-600"> {item.label}</p>
+            <div key={index} className='flex h-20 w-40 flex-col items-center justify-center gap-1 rounded-md border border-gray-200 bg-white shadow dark:border-slate-600 dark:bg-slate-900'>
+              <b className="dark:text-slate-100">{item.value.length}</b>
+              <p className="text-slate-600 dark:text-slate-400"> {item.label}</p>
             </div>
           ))}
         </div>
 
         {/* Tabs */}
-        <div className="inline-flex border border-gray-200 flex-wrap items-center rounded-md p-1 bg-white shadow-sm">
+        <div className="inline-flex flex-wrap items-center rounded-md border border-gray-200 bg-white p-1 shadow-sm dark:border-slate-600 dark:bg-slate-900">
           {
           dataArray.map((tab) => (
-            <button onClick={()=> setCurrentTab(tab.label)} key={tab.label} className={`cursor-pointer flex items-center px-3 py-1 text-sm rounded-md transition-colors ${currentTab === tab.label ? 
-            'bg-slate-100 text-black font-medium' : 'text-slate-500 hover:text-black'}`} >
+            <button onClick={()=> setCurrentTab(tab.label)} key={tab.label} className={`flex cursor-pointer items-center rounded-md px-3 py-2 text-sm transition-colors md:py-1 ${currentTab === tab.label ? 
+            'bg-slate-100 font-medium text-black dark:bg-slate-800 dark:text-slate-100' : 'text-slate-500 hover:text-black dark:text-slate-400 dark:hover:text-slate-100'}`} >
               <tab.icon className="w-4 h-4 " />
               <span className="ml-1">{tab.label}</span>
               {tab.value.length !== undefined && (

@@ -1,63 +1,105 @@
-import { Eye, MessageSquare } from 'lucide-react'
-import {type User } from '../assets/assets'
-import { useNavigate  } from 'react-router-dom'
+import { useMemo, useState } from 'react'
+import { Eye, MessageSquare, Search } from 'lucide-react'
+import { type User } from '../assets/assets'
+import { useNavigate } from 'react-router-dom'
 import type { RootState } from '../app/store'
 import { useSelector } from 'react-redux'
 
 const Messages = () => {
-
-  const { connections, following } = useSelector((state:RootState) => state.connections)
+  const { connections, following } = useSelector((state: RootState) => state.connections)
   const navigate = useNavigate()
-  const usersMap = new Map<string, User>();
-  [...connections, ...following].forEach((u: User) => {
-    if (u?._id) usersMap.set(u._id, u);
-  });
-  const users = Array.from(usersMap.values());
+  const [q, setQ] = useState('')
 
-  
+  const usersMap = new Map<string, User>()
+  ;[...connections, ...following].forEach((u: User) => {
+    if (u?._id) usersMap.set(u._id, u)
+  })
+  const users = Array.from(usersMap.values())
+
+  const filtered = useMemo(() => {
+    const s = q.trim().toLowerCase()
+    if (!s) return users
+    return users.filter(
+      (u) =>
+        u.full_name?.toLowerCase().includes(s) ||
+        u.username?.toLowerCase().includes(s) ||
+        u.bio?.toLowerCase().includes(s)
+    )
+  }, [users, q])
+
   return (
-    <div className="min-h-screen overflow-y-scroll relative bg-slate-50">
-      <div className="max-w-6xl mx-auto p-6">
-        {/* Title */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-slate-900 mb-2">Messages</h1>
-          <p className="text-slate-600">Talk to your friends and family</p>
+    <div className="min-h-full bg-slate-50 dark:bg-slate-950 md:min-h-0 md:h-full md:overflow-y-auto">
+      <div className="mx-auto max-w-6xl px-3 py-4 md:p-6">
+        <div className="mb-6 hidden md:block">
+          <h1 className="mb-1 text-3xl font-bold text-slate-900 dark:text-slate-100">Messages</h1>
+          <p className="text-slate-600 dark:text-slate-400">Talk to your friends and family</p>
         </div>
 
-        {/* Connected Users */}
+        <div className="relative mb-4 md:mb-8">
+          <Search className="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400" />
+          <input
+            type="search"
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+            placeholder="Search conversations..."
+            className="h-12 w-full rounded-xl border border-slate-200 bg-white pl-10 pr-3 text-base text-slate-900 shadow-sm outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/25 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 md:text-sm"
+          />
+        </div>
+
         <div className="flex flex-col gap-3">
           {users.length === 0 && (
-            <div className="max-w-xl p-6 bg-white rounded-md shadow text-slate-600">
-              No users to message yet. Follow/connect with people from Discover or Connections.
+            <div className="max-w-xl rounded-xl bg-white p-6 text-slate-600 shadow dark:bg-slate-900 dark:text-slate-400">
+              No users to message yet. Follow or connect with people from Discover or Connections.
             </div>
           )}
-          {users.map((user:User) => (
-            <div key={user._id} className='max-w-xl flex flex-wrap gap-5 p-6 bg-white rounded-md shadow'>
-              <img src={user.profile_picture} alt="Profile" className='rounded-full size-12 mx-auto'/>
-              <div className='flex-1'>
-                <p className='font-medium text-slate-700'>{user.full_name}</p>
-                <p className='text-slate-500'>@{user.username}</p>
-                <p className='text-sm text-gray-600'>{user.bio}</p>
+
+          {filtered.map((user: User) => (
+            <div
+              key={user._id}
+              className="flex items-center gap-3 rounded-2xl border border-slate-200/80 bg-white p-3 shadow-sm dark:border-slate-700 dark:bg-slate-900 md:max-w-xl md:flex-nowrap md:gap-5 md:p-6"
+            >
+              <img
+                src={user.profile_picture}
+                alt=""
+                className="size-12 shrink-0 rounded-full object-cover md:mx-0"
+              />
+              <div className="min-w-0 flex-1">
+                <p className="truncate font-medium text-slate-800 dark:text-slate-100">{user.full_name}</p>
+                <p className="truncate text-slate-500 dark:text-slate-400">@{user.username}</p>
+                {user.bio ? (
+                  <p className="mt-0.5 line-clamp-2 text-sm text-slate-600 dark:text-slate-400">{user.bio}</p>
+                ) : null}
               </div>
 
-              <div className='flex flex-col gap-2 mt-4'>
-                <button onClick={() => navigate(`/messages/${user._id}`)} type='button' className="size-10 flex items-center justify-center text-sm rounded bg-slate-100 hover:bg-slate-200 text-slate-800
-                 active:scale-95 transition cursor-pointer gap-1" aria-label="jbjbj">
-                  <MessageSquare className='w-4 h-4' />
+              <div className="flex shrink-0 flex-col gap-2 md:flex-row">
+                <button
+                  onClick={() => navigate(`/messages/${user._id}`)}
+                  type="button"
+                  className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-xl bg-slate-100 text-slate-800 transition hover:bg-slate-200 active:scale-95 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700"
+                  aria-label={`Open chat with ${user.full_name}`}
+                >
+                  <MessageSquare className="h-5 w-5" />
                 </button>
 
-                <button type='button' onClick={() => navigate(`/profile/${user._id}`)} className="size-10 flex items-center justify-center text-sm rounded bg-slate-100 hover:bg-slate-200 text-slate-800
-                 active:scale-95 transition cursor-pointer " aria-label="seen">
-                  <Eye className='w-4 h-4' />
+                <button
+                  type="button"
+                  onClick={() => navigate(`/profile/${user._id}`)}
+                  className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-xl bg-slate-100 text-slate-800 transition hover:bg-slate-200 active:scale-95 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700"
+                  aria-label={`View ${user.full_name} profile`}
+                >
+                  <Eye className="h-5 w-5" />
                 </button>
-
               </div>
             </div>
           ))}
+
+          {users.length > 0 && filtered.length === 0 && (
+            <p className="text-center text-sm text-slate-500 dark:text-slate-400">No matches for your search.</p>
+          )}
         </div>
       </div>
     </div>
-    )
+  )
 }
 
 export default Messages

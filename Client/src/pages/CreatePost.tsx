@@ -48,16 +48,18 @@ const CreatePost = () => {
   }
 
   return (
-    <div className='min-h-scren bg-gradient-to-b from-slate-50 to-white'>
-      <div className='max-w-6xl mx-auto p-6'>
+    <div className="min-h-full bg-gradient-to-b from-slate-50 to-white dark:from-slate-950 dark:to-slate-900 md:min-h-0 md:h-full md:overflow-y-auto">
+      <div className="mx-auto max-w-6xl px-3 py-4 md:p-6">
         {/* Title */}
-        <div className='mb-8'>
-          <h1 className='text-3xl font-bold text-slate-900 sm:pb-3 rounded-xl shadow-md space-y-4'> Create Post</h1>
-          <p className='text-slate-600'>Share your thoughts with the world</p>
+        <div className="mb-4 md:mb-8">
+          <h1 className="rounded-xl text-2xl font-bold text-slate-900 shadow-md dark:text-slate-100 sm:pb-3 md:text-3xl">
+            Create Post
+          </h1>
+          <p className="text-sm text-slate-600 dark:text-slate-400 md:text-base">Share your thoughts with the world</p>
         </div>
 
         {/* Form */}
-        <div className='max-w-xl bg-white p-4 sm:p-8 sm:pb-3 rounded-xl shadow-md space-y-4'>
+        <div className="max-w-xl space-y-4 rounded-xl bg-white p-4 shadow-md dark:bg-slate-900 sm:p-8 sm:pb-3">
           {/* Header */}
           <div className='flex items-center gap-3'>
             <img src={user?.profile_picture} alt="profile" className='w-12 h-12 rounded-full shadow' />
