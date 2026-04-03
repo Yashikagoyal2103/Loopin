@@ -20,7 +20,7 @@ const ChatBox = () => {
   const [user, setUser] = useState<User | null>(null)
   const messageEndRef = useRef<HTMLDivElement>(null)
 
-  const connections = useSelector((state: RootState) => state.connections.connections)
+  const { connections, following } = useSelector((state: RootState) => state.connections)
 
   //Message type
   interface Message {
@@ -65,7 +65,7 @@ const ChatBox = () => {
         setImage(null)
         dispatch(addMessage(data.message))
       }else{
-        throw new Error(data.message)
+        throw new Error(data.message || 'Failed to send message')
       }
     }catch( error:unknown){
       toast.error((error as Error).message)
@@ -81,11 +81,16 @@ const ChatBox = () => {
   },[userId])
 
   useEffect(() => {
-    if(connections.length >0 && userId){
-      const user= connections.find((connection:User) => connection._id === userId)
-      setUser(user || null)
+    if(!userId){
+      setUser(null)
+      return;
     }
-  },[connections,userId])
+    const usersMap = new Map<string, User>();
+    [...connections, ...following].forEach((u: User) => {
+      if (u?._id) usersMap.set(u._id, u);
+    });
+    setUser(usersMap.get(userId) || null);
+  },[connections, following, userId])
 
 
   useEffect(() =>{

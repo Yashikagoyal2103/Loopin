@@ -52,7 +52,16 @@ const Profile = () => {
           </div>
 
           {/* User info */}
-          <UserProfileInfo user={user} posts={posts} profileId={profileId} setShowEdit={setShowEdit}/>
+          <UserProfileInfo
+            user={user}
+            posts={posts}
+            profileId={profileId}
+            setShowEdit={setShowEdit}
+            onProfileUpdated={() => {
+              if (profileId) fetchUser(profileId);
+              else if (currentUser?._id) fetchUser(currentUser._id);
+            }}
+          />
         </div>
 
 

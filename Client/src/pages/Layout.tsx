@@ -7,7 +7,12 @@ import Loading from '../components/Loading'
 import { useSelector } from 'react-redux'
 import type { RootState } from '../app/store'
 
-const Layout = () => {
+interface LayoutProps {
+  darkMode: boolean;
+  setDarkMode: (value: boolean) => void;
+}
+
+const Layout = ({ darkMode, setDarkMode }: LayoutProps) => {
 
   const user = useSelector((state: RootState) => state.user.value);
   const [sidebarOpen, setSidebarOpen] = useState<boolean>(false)
@@ -15,7 +20,7 @@ const Layout = () => {
   return user ? (
     <div className="w-full flex h-screen">
 
-      <Sidebar sidebarOpen= {sidebarOpen} setSidebarOpen={setSidebarOpen}/>
+      <Sidebar sidebarOpen= {sidebarOpen} setSidebarOpen={setSidebarOpen} darkMode={darkMode} setDarkMode={setDarkMode} />
       <div className="flex-1 bg-slate-50">
         {/* This is where the main content will be rendered */}
         <Outlet />

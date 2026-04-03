@@ -1,15 +1,47 @@
-import { Calendar, MapPin, PenBox, Verified } from 'lucide-react'
+import { Calendar, MapPin, PenBox, Verified, UserPlus, UserCheck } from 'lucide-react'
 import { type User , type Post} from '../assets/assets'
 import moment from 'moment'
+import { useSelector } from 'react-redux'
+import type { RootState } from '../app/store'
+import api from '../api/axios'
+import toast from 'react-hot-toast'
+import { useEffect, useState } from 'react'
 
 type Props = {
   user: User;
   posts: Post[];
   profileId: string | number |unknown ;
   setShowEdit: (show: boolean) => void;
+  onProfileUpdated?: () => void;
 };
 
-const UserProfileInfo = ({user, posts, profileId , setShowEdit}: Props) => {
+const UserProfileInfo = ({user, posts, profileId , setShowEdit, onProfileUpdated}: Props) => {
+  const currentUser = useSelector((state: RootState) => state.user.value);
+  const isOwnProfile = !profileId || currentUser?._id === user._id;
+  const isFollowingFromStore = !!currentUser?._id && (currentUser.following || []).includes(user._id);
+  const [isFollowing, setIsFollowing] = useState(isFollowingFromStore);
+
+  useEffect(() => {
+    setIsFollowing(isFollowingFromStore);
+  }, [isFollowingFromStore, user._id]);
+
+  const toggleFollow = async () => {
+    if (!user?._id) return;
+    try {
+      const url = isFollowing ? `/api/user/unfollow/${user._id}` : `/api/user/follow/${user._id}`;
+      const { data } = await api.post(url);
+      if (data.success) {
+        toast.success(data.message);
+        setIsFollowing((prev) => !prev);
+        onProfileUpdated?.();
+      } else {
+        toast.error(data.message || 'Action failed');
+      }
+    } catch (e: unknown) {
+      toast.error(e instanceof Error ? e.message : 'Action failed');
+    }
+  };
+
   return (
     <div className='relative py-4 px-6 md:px-8 bg-white '>
         <div className='flex flex-col md:flex-row items-start gap-6'>
@@ -27,14 +59,21 @@ const UserProfileInfo = ({user, posts, profileId , setShowEdit}: Props) => {
                         </div>
                         <p className='text-gray-600'>{user.username ? `@${user.username}` : 'Add a username'}</p>
                     </div>
-                    {/* edit button as user is on own profile */}
-                    {!profileId && 
-                    <button onClick={() => setShowEdit(true)} className='flex items-center gap-2 border border-gray-300 hover:bg-gray-50
-                     px-4 py-2 rounded-lg font-medium transition-colors mt-4 md:mt-0'>
-                        <PenBox className='w-4 h-4 '/>
-                        Edit
-                    </button>
-                    }
+                    <div className='flex items-center gap-2 mt-4 md:mt-0'>
+                      {isOwnProfile ? (
+                        <button onClick={() => setShowEdit(true)} className='flex items-center gap-2 border border-gray-300 hover:bg-gray-50
+                        px-4 py-2 rounded-lg font-medium transition-colors'>
+                          <PenBox className='w-4 h-4 '/>
+                          Edit
+                        </button>
+                      ) : (
+                        <button onClick={toggleFollow} className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors
+                          ${isFollowing ? 'bg-slate-100 hover:bg-slate-200 text-slate-800' : 'bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white'}`}>
+                          {isFollowing ? <UserCheck className='w-4 h-4' /> : <UserPlus className='w-4 h-4' />}
+                          {isFollowing ? 'Following' : 'Follow'}
+                        </button>
+                      )}
+                    </div>
                 </div>
                 <p className='text-gray-700 text-sm max-w-md mt-4'>{user.bio}</p>
 

@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { Routes, Route } from 'react-router-dom'
 import Login from './pages/Login'
 import Feed from './pages/Feed'
@@ -20,8 +20,14 @@ import { resetMessages } from './features/messages/messagesSlice'
 
 const App = () => {
   const { user, loading } = useAuth()
+  const [darkMode, setDarkMode] = useState(() => localStorage.getItem('loopin-theme') === 'dark');
 
   const dispatch = useDispatch<AppDispatch>();
+
+  useEffect(() => {
+    document.documentElement.classList.toggle('dark', darkMode);
+    localStorage.setItem('loopin-theme', darkMode ? 'dark' : 'light');
+  }, [darkMode]);
 
   useEffect(() => {
     if (user) {
@@ -43,7 +49,8 @@ const App = () => {
     <>
       <Toaster/>
       <Routes>
-        <Route path='/' element={!user ? <Login/> : <Layout/>}>
+        <Route path='/login' element={<Login/>} />
+        <Route path='/' element={!user ? <Login/> : <Layout darkMode={darkMode} setDarkMode={setDarkMode} />}>
           <Route index element={<Feed/>}/>
           <Route path='/messages' element={<Messages/>}/>
           <Route path='/messages/:userId' element={<ChatBox/>}/>

@@ -8,4 +8,13 @@ export default defineConfig({
     react(),
     tailwindcss()
   ],
+  server: {
+    // Same-origin `/api` so httpOnly auth cookies work in dev (no cross-port cookie issues).
+    proxy: {
+      '/api': {
+        target: 'http://localhost:4000',
+        changeOrigin: true
+      }
+    }
+  }
 })

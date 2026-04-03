@@ -6,8 +6,13 @@ import { useSelector } from 'react-redux'
 
 const Messages = () => {
 
-  const { connections } = useSelector((state:RootState) => state.connections)
+  const { connections, following } = useSelector((state:RootState) => state.connections)
   const navigate = useNavigate()
+  const usersMap = new Map<string, User>();
+  [...connections, ...following].forEach((u: User) => {
+    if (u?._id) usersMap.set(u._id, u);
+  });
+  const users = Array.from(usersMap.values());
 
   
   return (
@@ -21,7 +26,12 @@ const Messages = () => {
 
         {/* Connected Users */}
         <div className="flex flex-col gap-3">
-          {connections.map((user:User) => (
+          {users.length === 0 && (
+            <div className="max-w-xl p-6 bg-white rounded-md shadow text-slate-600">
+              No users to message yet. Follow/connect with people from Discover or Connections.
+            </div>
+          )}
+          {users.map((user:User) => (
             <div key={user._id} className='max-w-xl flex flex-wrap gap-5 p-6 bg-white rounded-md shadow'>
               <img src={user.profile_picture} alt="Profile" className='rounded-full size-12 mx-auto'/>
               <div className='flex-1'>

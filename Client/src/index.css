@@ -14,3 +14,115 @@
 .scrollbar-hide::-webkit-scrollbar {
   display: none;  /* Chrome, Safari and Opera */
 }
+
+/* Black mode */
+:root{
+  --loopin-bg: #f8fafc;          /* slate-50 */
+  --loopin-surface: #ffffff;     /* cards */
+  --loopin-surface-2: #f1f5f9;   /* slate-100 */
+  --loopin-border: #e5e7eb;      /* gray-200 */
+  --loopin-text: #0f172a;        /* slate-900 */
+  --loopin-text-2: #334155;      /* slate-700 */
+  --loopin-muted: #64748b;       /* slate-500 */
+  --loopin-muted-2: #94a3b8;     /* slate-400 */
+  --loopin-input: #ffffff;
+  --loopin-input-text: #0f172a;
+}
+
+.dark{
+  /* Indigo-tinted dark (less flat gray) */
+  --loopin-bg: #0f1419;
+  --loopin-surface: #1a2332;
+  --loopin-surface-2: #243044;
+  --loopin-border: #3d4f66;
+  --loopin-text: #f1f5f9;
+  --loopin-text-2: #e2e8f0;
+  --loopin-muted: #a8b8cc;
+  --loopin-muted-2: #7c8ea3;
+  --loopin-input: #151c26;
+  --loopin-input-text: #f1f5f9;
+  --loopin-accent: rgba(99, 102, 241, 0.12);
+}
+
+.dark body,
+.dark #root {
+  background: radial-gradient(ellipse 100% 60% at 50% -20%, var(--loopin-accent), transparent 55%),
+    linear-gradient(180deg, #121a24 0%, var(--loopin-bg) 35%, #0c1016 100%);
+  color: var(--loopin-text);
+  min-height: 100vh;
+}
+
+/* Common utility overrides used throughout the app */
+.dark .bg-white,
+.dark [class*="bg-white/"] {
+  background-color: var(--loopin-surface) !important;
+}
+.dark .bg-slate-50,
+.dark .bg-gray-50,
+.dark .bg-gradient-to-b {
+  background-color: var(--loopin-bg) !important;
+}
+
+/* Force gradient pages (from-slate-50 to-white etc.) to dark stops */
+.dark .from-slate-50,
+.dark .from-white {
+  --tw-gradient-from: var(--loopin-bg) var(--tw-gradient-from-position) !important;
+  --tw-gradient-to: rgb(17 24 39 / 0) var(--tw-gradient-to-position) !important;
+}
+.dark .to-white,
+.dark .to-slate-50 {
+  --tw-gradient-to: var(--loopin-bg) var(--tw-gradient-to-position) !important;
+}
+.dark .bg-slate-100,
+.dark .bg-gray-100,
+.dark .bg-slate-200,
+.dark .bg-gray-200 {
+  background-color: var(--loopin-surface-2) !important;
+}
+
+.dark .text-slate-900,
+.dark .text-slate-800,
+.dark .text-gray-900,
+.dark .text-gray-800,
+.dark .text-slate-700,
+.dark .text-slate-600,
+.dark .text-gray-700,
+.dark .text-gray-600 {
+  color: var(--loopin-text) !important;
+}
+.dark .text-slate-500,
+.dark .text-gray-500 {
+  color: var(--loopin-muted) !important;
+}
+.dark .text-slate-400,
+.dark .text-gray-400 {
+  color: var(--loopin-muted-2) !important;
+}
+
+.dark .border-gray-200,
+.dark .border-gray-300,
+.dark .border-slate-200,
+.dark .border-slate-300 {
+  border-color: var(--loopin-border) !important;
+}
+
+.dark input,
+.dark textarea,
+.dark select {
+  background: var(--loopin-input);
+  color: var(--loopin-input-text);
+  border-color: var(--loopin-border);
+}
+
+.dark input::placeholder,
+.dark textarea::placeholder {
+  color: var(--loopin-muted-2);
+}
+
+/* Ensure dropdown-like shadows remain visible */
+.dark .shadow,
+.dark .shadow-md,
+.dark .shadow-lg,
+.dark .shadow-xl {
+  box-shadow: 0 8px 30px rgba(0,0,0,0.45) !important;
+}

@@ -10,16 +10,17 @@ const authRoute = express.Router();
 const oauthCookieBase = {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
-    sameSite: (process.env.NODE_ENV === 'production' ? 'strict' : 'lax') as 'strict' | 'lax'
+    sameSite: (process.env.NODE_ENV === 'production' ? 'strict' : 'lax') as 'strict' | 'lax',
+    path: '/'
 };
 
-// Local auth routes
+
+
 authRoute.post('/signup', signup);
 authRoute.post('/login', login);
 authRoute.post('/logout', logout);
-authRoute.get('/me', protect, getCurrentUser);
+authRoute.get('/me', protect as express.RequestHandler, getCurrentUser);
 
-// Google OAuth routes
 authRoute.get(
     '/google',
     passport.authenticate('google', { scope: ['profile', 'email'] })
@@ -30,11 +31,10 @@ authRoute.get(
     passport.authenticate('google', { session: false, failureRedirect: '/login?error=google_auth_failed' }),
     async (req, res) => {
         try {
-            const user = req.user as any;
-            
-            // Generate tokens
-            const token = generateToken({ userId: user._id, email: user.email });
-            const refreshToken = generateRefreshToken({ userId: user._id, email: user.email });
+            const user = req.user as { _id: { toString(): string }; email: string; full_name: string; username: string };
+
+            const token = generateToken({ userId: user._id.toString(), email: user.email });
+            const refreshToken = generateRefreshToken({ userId: user._id.toString(), email: user.email });
 
             res.cookie('token', token, {
                 ...oauthCookieBase,
@@ -46,11 +46,10 @@ authRoute.get(
                 maxAge: 30 * 24 * 60 * 60 * 1000
             });
 
-            // Trigger Inngest event
             await inngest.send({
                 name: 'app/user.created',
                 data: {
-                    userId: user._id,
+                    userId: user._id.toString(),
                     email: user.email,
                     full_name: user.full_name,
                     username: user.username,
@@ -58,7 +57,6 @@ authRoute.get(
                 }
             });
 
-            // Redirect to frontend
             const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
             res.redirect(`${frontendUrl}/?oauth=success`);
         } catch (error) {
