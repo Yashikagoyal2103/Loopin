@@ -65,7 +65,7 @@ const Layout = ({ darkMode, setDarkMode }: LayoutProps) => {
         <MobileHeader
           hide={hideHeader && !searchOpen && !drawerOpen}
           onMenu={() => setDrawerOpen(true)}
-          onSearch={() => setSearchOpen(true)}
+          // onSearch={() => setSearchOpen(true)}
         />
 
         <div
