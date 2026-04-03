@@ -129,3 +129,14 @@
 .dark .shadow-xl {
   box-shadow: 0 8px 30px rgba(0,0,0,0.45) !important;
 }
+
+
+/* Hide scrollbar but keep scrolling functionality */
+.hide-scrollbar {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;  /* Chrome, Safari, Opera */
+}

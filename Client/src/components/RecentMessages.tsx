@@ -51,10 +51,10 @@ const RecentMessages = () => {
   return (
     <div className="bg-white max-w-xs mt-6 p-4 min-h-20 rounded-md shadow text-xs text-slate-800">
         <h3 className="font-semibold text-slate-800 mb-4">Recent Messages</h3>
-        <div className="flex flex-col max-h-56 overflow-y-scroll no-scrollbar">
+        <div className="flex flex-col max-h-56 no-scrollbar overflow-y-scroll hide-scrollbar">
             {
                 messages.map((message, index) => (
-                    <Link key={index} to={`/messages/${message.from_user_id._id}`} className="flex items-start gap-2 py-2 hover:bg-slate-100">
+                    <Link key={index} to={`/messages/${message.from_user_id._id}`} className="flex items-start gap-2 py-2 hover:bg-slate-600">
                         <img src={message.from_user_id.profile_picture} alt="Profile" className='w-8 h-8 rounded-full '/>
                         <div className='w-full'>
                             <div className="flex justify-between">

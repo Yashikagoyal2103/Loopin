@@ -24,6 +24,7 @@ const App = () => {
 
   const dispatch = useDispatch<AppDispatch>();
 
+
   useEffect(() => {
     document.documentElement.classList.toggle('dark', darkMode);
     localStorage.setItem('loopin-theme', darkMode ? 'dark' : 'light');
@@ -66,3 +67,6 @@ const App = () => {
 }
 
 export default App
+
+
+
